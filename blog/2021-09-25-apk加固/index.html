@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 5.4.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  <title>APK加固 - Mark</title>
+
+  
+    <meta name="description" content="apk加固技术apk反编译反编译流程图 反编译apk构造 res：存放资源文件 META-INF：签名文件 class.dex Android 源码 lib :SO 文件 AndroidManifest:清单文件 如下图我们可以看出通过解压得到classes.dex我们能够看到源码这样是非常不好的  此时我们需要将核心代码加密，非核心代码则不需要加密 apk加固（防止反编译） 将核心代码加密，非核">
+<meta property="og:type" content="article">
+<meta property="og:title" content="APK加固">
+<meta property="og:url" content="http://liwentuo.github.io/blog/2021-09-25-apk%E5%8A%A0%E5%9B%BA/">
+<meta property="og:site_name" content="Mark">
+<meta property="og:description" content="apk加固技术apk反编译反编译流程图 反编译apk构造 res：存放资源文件 META-INF：签名文件 class.dex Android 源码 lib :SO 文件 AndroidManifest:清单文件 如下图我们可以看出通过解压得到classes.dex我们能够看到源码这样是非常不好的  此时我们需要将核心代码加密，非核心代码则不需要加密 apk加固（防止反编译） 将核心代码加密，非核">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://i.loli.net/2021/09/24/MEvf1CrKy6GPBLk.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/24/X4uQOmyp2JHjD8l.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/24/Nlk5Ee2b3co9mWR.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/24/s3noOz5huwWb4il.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/qhG4MbFneQk2mfH.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/t7S3VHPypACTi1x.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/Mtv8URNlXATFB6b.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/pEcyxtMN9FOLeg1.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/orcxbUGeFRuyEjX.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/DZtVBf4aOvIw8ud.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/95SuoyYAxOMKLfm.png">
+<meta property="og:image" content="https://i.loli.net/2021/09/25/YAPdjatBQpDmgfh.png">
+<meta property="article:published_time" content="2021-09-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-09-23T16:00:00.000Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="APP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://i.loli.net/2021/09/24/MEvf1CrKy6GPBLk.png">
+  
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Mark" type="application/atom+xml">
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+    
+      <link rel="apple-touch-icon" sizes="180x180" href="https://cdn.jsdelivr.net/gh/cdn-x/xaoxuu@1.0.4/favicon/apple-touch-icon.png">
+    
+      <link rel="icon" type="image/png" sizes="32x32" href="https://cdn.jsdelivr.net/gh/cdn-x/xaoxuu@1.0.4/favicon/favicon-32x32.png">
+    
+      <link rel="icon" type="image/png" sizes="16x16" href="https://cdn.jsdelivr.net/gh/cdn-x/xaoxuu@1.0.4/favicon/favicon-16x16.png">
+    
+      <link rel="manifest" href="https://cdn.jsdelivr.net/gh/cdn-x/xaoxuu@1.0.4/favicon/site.webmanifest">
+    
+      <link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/cdn-x/xaoxuu@1.0.4/favicon/favicon.ico">
+    
+      <meta name="theme-color" content="#f8f8f8">
+    
+  
+</head>
+
+<body>
+  
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+
+<header class="header">
+
+<div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.2/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.loli.net/2021/09/22/hsX8ka5zQJeGDUb.jpg" onerror="javascript:this.classList.add('error');this.src='https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.1/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Mark</div><div class="sub normal cap">Daivd</div><div class="sub hover cap" style="opacity:0">angle.lwt@qq.com</div></a></div>
+<nav class="menu dis-select"><a class="nav-item active" href="/">博客</a><a class="nav-item" href="/wiki/">项目</a><a class="nav-item" href="/notes/">便笺</a><a class="nav-item" href="/about/">关于Mark</a></nav></header>
+
+<div class="widgets">
+
+<div class="widget-wrap single" id="toc"><div class="widget-header cap dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#apk%E5%8F%8D%E7%BC%96%E8%AF%91"><span class="toc-text">apk反编译</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">反编译流程图</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8F%8D%E7%BC%96%E8%AF%91apk%E6%9E%84%E9%80%A0"><span class="toc-text">反编译apk构造</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#apk%E5%8A%A0%E5%9B%BA%EF%BC%88%E9%98%B2%E6%AD%A2%E5%8F%8D%E7%BC%96%E8%AF%91%EF%BC%89"><span class="toc-text">apk加固（防止反编译）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E5%9B%BA%E6%96%B9%E5%90%91"><span class="toc-text">加固方向</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E5%9B%BA%E6%96%B9%E6%A1%88%E6%80%BB%E4%BD%93%E6%80%9D%E6%83%B3"><span class="toc-text">加固方案总体思想</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%8A%A0%E5%AF%86%E6%B5%81%E7%A8%8B"><span class="toc-text">加密流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%A7%A3%E5%AF%86%E6%B5%81%E7%A8%8B"><span class="toc-text">解密流程</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%85%B7%E4%BD%93%E5%AE%9E%E7%8E%B0"><span class="toc-text">具体实现</span></a><ol class="toc-child"><li class="toc-item toc-level-4"><a class="toc-link" href="#%E5%8A%A0%E5%AF%86"><span class="toc-text">加密</span></a><ol class="toc-child"><li class="toc-item toc-level-5"><a class="toc-link" href="#%E6%B5%81%E7%A8%8B%E5%9B%BE"><span class="toc-text">流程图</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%80%E6%AD%A5"><span class="toc-text">第一步</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%BA%8C%E6%AD%A5"><span class="toc-text">第二步</span></a></li><li class="toc-item toc-level-5"><a class="toc-link" href="#%E7%AC%AC%E4%B8%89%E6%AD%A5"><span class="toc-text">第三步</span></a></li></ol></li><li class="toc-item toc-level-4"><a class="toc-link" href="#%E8%A7%A3%E5%AF%86"><span class="toc-text">解密</span></a></li></ol></li></ol></li></ol></div></div></div>
+
+
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" title="GitHub" href="https://github.com/liwentuo" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/08a41b181ce68.svg"/></a><a class="social" title="Unsplash" href="https://unsplash.com/@angledaivd" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/3616429.svg"/></a><a class="social" title="Comments" href="/about/#comments" rel="noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/942ebbf1a4b91.svg"/></a></div></footer>
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">Mark</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/blog/categories/apk%E5%8A%A0%E5%9B%BA/">APK加固</a></div><div id="post-meta">发布于&nbsp;<time datetime="2021-09-23T16:00:00.000Z">2021年9月24日</time></div></div>
+
+<article class='content md post'>
+<h1 class="article-title"><span>APK加固</span></h1>
+<h1 id="apk加固技术"><a href="#apk加固技术" class="headerlink" title="apk加固技术"></a>apk加固技术</h1><h2 id="apk反编译"><a href="#apk反编译" class="headerlink" title="apk反编译"></a>apk反编译</h2><h3 id="反编译流程图"><a href="#反编译流程图" class="headerlink" title="反编译流程图"></a>反编译流程图</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/24/MEvf1CrKy6GPBLk.png"></p>
+<h3 id="反编译apk构造"><a href="#反编译apk构造" class="headerlink" title="反编译apk构造"></a>反编译apk构造</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/24/X4uQOmyp2JHjD8l.png"></p>
+<p>res：存放资源文件</p>
+<p>META-INF：签名文件</p>
+<p>class.dex Android 源码</p>
+<p>lib :SO 文件</p>
+<p>AndroidManifest:清单文件</p>
+<p>如下图我们可以看出通过解压得到classes.dex我们能够看到源码这样是非常不好的</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/24/Nlk5Ee2b3co9mWR.png"></p>
+<p>此时我们需要将核心代码加密，非核心代码则不需要加密</p>
+<h2 id="apk加固（防止反编译）"><a href="#apk加固（防止反编译）" class="headerlink" title="apk加固（防止反编译）"></a>apk加固（防止反编译）</h2><ul>
+<li><p>将核心代码加密，非核心代码则不需要加密</p>
+</li>
+<li><p>通过密钥进行加密，SHA-1将密钥放在服务端用户第一次下载app时获取密钥，或者放在so库中</p>
+</li>
+</ul>
+<h3 id="加固方向"><a href="#加固方向" class="headerlink" title="加固方向"></a>加固方向</h3><p>保护<code>dex</code>文件</p>
+<h3 id="加固方案总体思想"><a href="#加固方案总体思想" class="headerlink" title="加固方案总体思想"></a>加固方案总体思想</h3><p>一个程序员的故事:辛辛苦苦找到一个对象,结婚后发现是个母夜叉。不给管钱就闹,晚上睡觉她趴着睡,导致这程序员无法去洗脚了。然而这个程序员很努力,平时除了上班,还能够做点外包,赚点外快。所以他就想到把<code>工资卡</code>上交,而把赚到的外快放到了自己的<code>小金库</code>。从此过上了性福生活。 </p>
+<p>通过通过这个故事我们可以知道加固就是：将非核心的dex文件进行暴露来达到保护核心dex文件的目的。如下图</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/24/s3noOz5huwWb4il.png"></p>
+<h3 id="加密流程"><a href="#加密流程" class="headerlink" title="加密流程"></a>加密流程</h3><ul>
+<li><p>拿到apk文件中的dex源文件使用密钥进行加密</p>
+</li>
+<li><p>通过dex2壳来启动app</p>
+</li>
+<li><p>将加密的dex和壳dex2进行合并成一个完整dex文件此时apk是不能运行的，需要修改文件的签名</p>
+</li>
+</ul>
+<h3 id="解密流程"><a href="#解密流程" class="headerlink" title="解密流程"></a>解密流程</h3><p>拿到合并的dex解密拿到源dex去加载</p>
+<h3 id="具体实现"><a href="#具体实现" class="headerlink" title="具体实现"></a>具体实现</h3><p>如下图App中包含<code>app</code>和<code>mylibrary</code></p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/qhG4MbFneQk2mfH.png"></p>
+<p><code>app</code>中生成<code>apk</code>文件</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/t7S3VHPypACTi1x.png"></p>
+<p><code>library</code>中生成<code>.arr</code>文件</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/Mtv8URNlXATFB6b.png"></p>
+<p>如下图我们可以看到<code>.arr</code>文件的构成,classes.jar 就是我们的<code>dex2壳</code>文件</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/pEcyxtMN9FOLeg1.png"></p>
+<h4 id="加密"><a href="#加密" class="headerlink" title="加密"></a>加密</h4><h5 id="流程图"><a href="#流程图" class="headerlink" title="流程图"></a>流程图</h5><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/orcxbUGeFRuyEjX.png"></p>
+<h5 id="第一步"><a href="#第一步" class="headerlink" title="第一步"></a>第一步</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * 第一步 处理原始apk 加密dex</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line">AES.init(AES.DEFAULT_PWD);</span><br><span class="line"><span class="comment">//这样一个最简单的AES加解密就完成了，</span></span><br><span class="line"><span class="comment">// 但有一个缺点，密码的长度必须为128位，也就是16个字节，否则会报错；</span></span><br><span class="line"><span class="comment">//解压apk</span></span><br><span class="line">File apkFile = <span class="keyword">new</span> File(<span class="string">&quot;app/source/apk/app-debug.apk&quot;</span>);</span><br><span class="line">File newApkFile = <span class="keyword">new</span> File(apkFile.getParent() + File.separator + <span class="string">&quot;temp&quot;</span>);</span><br><span class="line"><span class="keyword">if</span> (!newApkFile.exists()) &#123;</span><br><span class="line">    newApkFile.mkdirs();</span><br><span class="line">&#125;</span><br><span class="line">File mainDexFile = AES.encryptAPKFile(apkFile, newApkFile);<span class="comment">//加密后的新文件</span></span><br><span class="line"><span class="keyword">if</span> (newApkFile.isDirectory()) &#123;</span><br><span class="line">    File[] listFiles = newApkFile.listFiles();</span><br><span class="line">    <span class="keyword">for</span> (File file : listFiles) &#123;</span><br><span class="line">        <span class="keyword">if</span> (file.isFile()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (file.getName().endsWith(<span class="string">&quot;.dex&quot;</span>)) &#123;</span><br><span class="line">                String name = file.getName();</span><br><span class="line">                System.out.println(<span class="string">&quot; name :&quot;</span> + name);</span><br><span class="line">                <span class="keyword">int</span> cursor = name.indexOf(<span class="string">&quot;.dex&quot;</span>);</span><br><span class="line">                String newName = file.getParent() + File.separator + name.substring(<span class="number">0</span>, cursor) + <span class="string">&quot;_&quot;</span> + <span class="string">&quot;.dex&quot;</span>;</span><br><span class="line">                System.out.println(<span class="string">&quot;newName:&quot;</span> + newName);</span><br><span class="line">                file.renameTo(<span class="keyword">new</span> File(newName));</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="第二步"><a href="#第二步" class="headerlink" title="第二步"></a>第二步</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">  <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 第二步 处理aar 获得壳dex</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        File aarFile = <span class="keyword">new</span> File(<span class="string">&quot;app/source/aar/protectapp-debug.aar&quot;</span>);</span><br><span class="line">        File aarDex = Dx.jar2Dex(aarFile);<span class="comment">//通过这个方法将lib中的classes.jar打包为dex文件</span></span><br><span class="line"><span class="comment">//        aarData = Utils.getBytes(aarDex);   //将dex文件读到byte 数组</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        File tempMainDex = <span class="keyword">new</span> File(newApkFile.getPath() + File.separator + <span class="string">&quot;classes.dex&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (!tempMainDex.exists()) &#123;</span><br><span class="line">            tempMainDex.createNewFile();</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;MyMain&quot;</span> + tempMainDex.getAbsolutePath());</span><br><span class="line">        FileOutputStream fos = <span class="keyword">new</span> FileOutputStream(tempMainDex);</span><br><span class="line">        <span class="keyword">byte</span>[] fbytes = Utils.getBytes(aarDex);</span><br><span class="line">        fos.write(fbytes);</span><br><span class="line">        fos.flush();</span><br><span class="line">        fos.close();</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>因为第一步我们已经将<code>源文件.dex</code>加密此时<code>APK</code>时不能运行的我们需要,将<code>mylibrary</code>中的<code>classe.jar</code>,通过<code>dx.bat</code>命令转为<code>classes.dex</code>文件作为我们的壳文件</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/DZtVBf4aOvIw8ud.png"></p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Dx</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> File <span class="title">jar2Dex</span><span class="params">(File aarFile)</span> <span class="keyword">throws</span> IOException, InterruptedException </span>&#123;</span><br><span class="line">        File fakeDex = <span class="keyword">new</span> File(aarFile.getParent() + File.separator + <span class="string">&quot;temp&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;jar2Dex: aarFile.getParent(): &quot;</span> + aarFile.getParent());</span><br><span class="line">        <span class="comment">//解压aar到 fakeDex 目录下</span></span><br><span class="line">        Zip.unZip(aarFile, fakeDex);</span><br><span class="line">        <span class="comment">//过滤找到对应的fakeDex 下的classes.jar</span></span><br><span class="line">        File[] files = fakeDex.listFiles(<span class="keyword">new</span> FilenameFilter() &#123;</span><br><span class="line">            <span class="meta">@Override</span></span><br><span class="line">            <span class="function"><span class="keyword">public</span> <span class="keyword">boolean</span> <span class="title">accept</span><span class="params">(File file, String s)</span> </span>&#123;</span><br><span class="line">                <span class="keyword">return</span> s.equals(<span class="string">&quot;classes.jar&quot;</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;);</span><br><span class="line">        <span class="keyword">if</span> (files == <span class="keyword">null</span> || files.length &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;the aar is invalidate&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        File classes_jar = files[<span class="number">0</span>];</span><br><span class="line">        <span class="comment">// 将classes.jar 变成classes.dex</span></span><br><span class="line">        File aarDex = <span class="keyword">new</span> File(classes_jar.getParentFile(), <span class="string">&quot;classes.dex&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">//我们要将jar 转变成为dex 需要使用android tools 里面的dx.bat</span></span><br><span class="line">        <span class="comment">//使用java 调用windows 下的命令</span></span><br><span class="line">        Dx.dxCommand(aarDex, classes_jar);</span><br><span class="line">        <span class="keyword">return</span> aarDex;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">dxCommand</span><span class="params">(File aarDex, File classes_jar)</span> <span class="keyword">throws</span> IOException, InterruptedException </span>&#123;</span><br><span class="line">        Runtime runtime = Runtime.getRuntime();</span><br><span class="line">        <span class="comment">//通过此方法调用dx.bat命令将classes.jar转为classes.dex文件</span></span><br><span class="line">        Process process = runtime.exec(<span class="string">&quot;cmd.exe /C dx --dex --output=&quot;</span> + aarDex.getAbsolutePath() + <span class="string">&quot; &quot;</span> +</span><br><span class="line">                classes_jar.getAbsolutePath());</span><br><span class="line">        System.out.println(<span class="string">&quot;dxCommand 1 &quot;</span> );</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            process.waitFor();</span><br><span class="line">            System.out.println(<span class="string">&quot;dxCommand 2  &quot;</span> );</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">            System.out.println(<span class="string">&quot;dxCommand 3  &quot;</span> );</span><br><span class="line">            <span class="keyword">throw</span> e;</span><br><span class="line">        &#125;</span><br><span class="line">        System.out.println(<span class="string">&quot;process.exitValue() = &quot;</span> +process.exitValue());</span><br><span class="line">        <span class="keyword">if</span> (process.exitValue() != <span class="number">0</span>) &#123;</span><br><span class="line">            InputStream inputStream = process.getErrorStream();</span><br><span class="line">            <span class="keyword">int</span> len;</span><br><span class="line">            <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[<span class="number">2048</span>];</span><br><span class="line">            ByteArrayOutputStream bos = <span class="keyword">new</span> ByteArrayOutputStream();</span><br><span class="line">            <span class="keyword">while</span>((len=inputStream.read(buffer)) != -<span class="number">1</span>)&#123;</span><br><span class="line">                bos.write(buffer,<span class="number">0</span>,len);</span><br><span class="line">            &#125;</span><br><span class="line">            System.out.println(<span class="keyword">new</span> String(bos.toByteArray(),<span class="string">&quot;GBK&quot;</span>));</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> RuntimeException(<span class="string">&quot;dx run failed&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        process.destroy();</span><br><span class="line">        System.out.println(<span class="string">&quot;process: process.destroy() &quot;</span> );</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>由以上两个步骤我们就会在source看到如下图</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/95SuoyYAxOMKLfm.png"></p>
+<p>如图我们发现多了一个classes_.dex这就是我们的壳文件，和我们加密的源文件dex。</p>
+<h5 id="第三步"><a href="#第三步" class="headerlink" title="第三步"></a>第三步</h5><figure class="highlight java"><table><tr><td class="code"><pre><span class="line">        <span class="comment">/**</span></span><br><span class="line"><span class="comment">         * 第3步 打包签名</span></span><br><span class="line"><span class="comment">         */</span></span><br><span class="line">        File unsignedApk = <span class="keyword">new</span> File(<span class="string">&quot;app/source/apks/apk-unsigned.apk&quot;</span>);</span><br><span class="line">        unsignedApk.getParentFile().mkdirs();</span><br><span class="line"><span class="comment">//        File disFile = new File(apkFile.getAbsolutePath() + File.separator+ &quot;temp&quot;);</span></span><br><span class="line">        Zip.zip(newApkFile, unsignedApk);</span><br><span class="line">        <span class="comment">//不用插件就不能自动使用原apk的签名...</span></span><br><span class="line">        File signedApk = <span class="keyword">new</span> File(<span class="string">&quot;app/source/apks/apk-signed.apk&quot;</span>);</span><br><span class="line">        Signature.signature(unsignedApk, signedApk);<span class="comment">//使用cmd命令进行打包签名</span></span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="解密"><a href="#解密" class="headerlink" title="解密"></a>解密</h4><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/09/25/YAPdjatBQpDmgfh.png"></p>
+<p>解密的时</p>
+<p>间第一次<code>APK</code>启动时的时间，如果发现<code>dex</code>没有解密则需要解密，如果解密就不需要解密了</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ShellApplication</span> <span class="keyword">extends</span>  <span class="title">Application</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String TAG = <span class="string">&quot;ShellApplication&quot;</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> String <span class="title">getPassword</span><span class="params">()</span></span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="string">&quot;abcdefghijklmnox&quot;</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//    static &#123;</span></span><br><span class="line"><span class="comment">//        System.loadLibrary(&quot;native-lib&quot;);</span></span><br><span class="line"><span class="comment">//    &#125;</span></span><br><span class="line">    <span class="comment">//application 第一个启动的方法</span></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">attachBaseContext</span><span class="params">(Context base)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">super</span>.attachBaseContext(base);</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        AES.init(getPassword());<span class="comment">//获得密码</span></span><br><span class="line">        File apkFile = <span class="keyword">new</span> File(getApplicationInfo().sourceDir);<span class="comment">//拿到apk文件</span></span><br><span class="line">        <span class="comment">//data/data/包名/files/fake_apk/</span></span><br><span class="line">        File unZipFile = getDir(<span class="string">&quot;fake_apk&quot;</span>, MODE_PRIVATE);<span class="comment">//创建解密akp文件</span></span><br><span class="line">        File app = <span class="keyword">new</span> File(unZipFile, <span class="string">&quot;app&quot;</span>);</span><br><span class="line">        <span class="keyword">if</span> (!app.exists()) &#123;</span><br><span class="line">            Zip.unZip(apkFile, app);<span class="comment">//解压app</span></span><br><span class="line">            File[] files = app.listFiles();</span><br><span class="line">            <span class="keyword">for</span> (File file : files) &#123;</span><br><span class="line">                String name = file.getName();</span><br><span class="line">                <span class="keyword">if</span> (name.equals(<span class="string">&quot;classes.dex&quot;</span>)) &#123;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (name.endsWith(<span class="string">&quot;.dex&quot;</span>)) &#123;</span><br><span class="line">                    <span class="keyword">try</span> &#123;</span><br><span class="line">                        <span class="keyword">byte</span>[] bytes = getBytes(file);</span><br><span class="line">                        FileOutputStream fos = <span class="keyword">new</span> FileOutputStream(file);</span><br><span class="line">                        <span class="keyword">byte</span>[] decrypt = AES.decrypt(bytes);<span class="comment">//加密文件</span></span><br><span class="line"><span class="comment">//                        fos.write(bytes);</span></span><br><span class="line">                        fos.write(decrypt);</span><br><span class="line">                        fos.flush();</span><br><span class="line">                        fos.close();</span><br><span class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</span><br><span class="line">                        e.printStackTrace();</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        List list = <span class="keyword">new</span> ArrayList&lt;&gt;();<span class="comment">//保留为了手动加载所有的dex文件</span></span><br><span class="line">        Log.d(<span class="string">&quot;FAKE&quot;</span>, Arrays.toString(app.listFiles()));</span><br><span class="line">        <span class="keyword">for</span> (File file : app.listFiles()) &#123;</span><br><span class="line">            <span class="keyword">if</span> (file.getName().endsWith(<span class="string">&quot;.dex&quot;</span>)) &#123;</span><br><span class="line">                list.add(file);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        Log.d(<span class="string">&quot;FAKE&quot;</span>, list.toString());</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            V19.install(getClassLoader(), list, unZipFile);<span class="comment">//手动加载所有的dex文件</span></span><br><span class="line">        &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchFieldException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (InvocationTargetException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchMethodException e) &#123;</span><br><span class="line">            e.printStackTrace();</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Field <span class="title">findField</span><span class="params">(Object instance, String name)</span> <span class="keyword">throws</span> NoSuchFieldException </span>&#123;</span><br><span class="line">        Class clazz = instance.getClass();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Field e = clazz.getDeclaredField(name);</span><br><span class="line">                <span class="keyword">if</span> (!e.isAccessible()) &#123;</span><br><span class="line">                    e.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> e;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NoSuchFieldException var4) &#123;</span><br><span class="line">                clazz = clazz.getSuperclass();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchFieldException(<span class="string">&quot;Field &quot;</span> + name + <span class="string">&quot; not found in &quot;</span> + instance.getClass());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> Method <span class="title">findMethod</span><span class="params">(Object instance, String name, Class... parameterTypes)</span></span></span><br><span class="line"><span class="function">            <span class="keyword">throws</span> NoSuchMethodException </span>&#123;</span><br><span class="line">        Class clazz = instance.getClass();</span><br><span class="line"><span class="comment">//        Method[] declaredMethods = clazz.getDeclaredMethods();</span></span><br><span class="line"><span class="comment">//        System.out.println(&quot;  findMethod &quot;);</span></span><br><span class="line"><span class="comment">//        for (Method m : declaredMethods) &#123;</span></span><br><span class="line"><span class="comment">//            System.out.print(m.getName() + &quot;  : &quot;);</span></span><br><span class="line"><span class="comment">//            Class&lt;?&gt;[] parameterTypes1 = m.getParameterTypes();</span></span><br><span class="line"><span class="comment">//            for (Class clazz1 : parameterTypes1) &#123;</span></span><br><span class="line"><span class="comment">//                System.out.print(clazz1.getName() + &quot; &quot;);</span></span><br><span class="line"><span class="comment">//            &#125;</span></span><br><span class="line"><span class="comment">//            System.out.println(&quot;&quot;);</span></span><br><span class="line"><span class="comment">//        &#125;</span></span><br><span class="line">        <span class="keyword">while</span> (clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Method e = clazz.getDeclaredMethod(name, parameterTypes);</span><br><span class="line">                <span class="keyword">if</span> (!e.isAccessible()) &#123;</span><br><span class="line">                    e.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="keyword">return</span> e;</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NoSuchMethodException var5) &#123;</span><br><span class="line">                clazz = clazz.getSuperclass();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NoSuchMethodException(<span class="string">&quot;Method &quot;</span> + name + <span class="string">&quot; with parameters &quot;</span> + Arrays.asList</span><br><span class="line">                (parameterTypes) + <span class="string">&quot; not found in &quot;</span> + instance.getClass());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">expandFieldArray</span><span class="params">(Object instance, String fieldName, Object[]</span></span></span><br><span class="line"><span class="params"><span class="function">            extraElements)</span> <span class="keyword">throws</span> NoSuchFieldException, IllegalArgumentException,</span></span><br><span class="line"><span class="function">            IllegalAccessException </span>&#123;</span><br><span class="line">        Field jlrField = findField(instance, fieldName);</span><br><span class="line">        Object[] original = (Object[]) ((Object[]) jlrField.get(instance));</span><br><span class="line">        Object[] combined = (Object[]) ((Object[]) Array.newInstance(original.getClass()</span><br><span class="line">                .getComponentType(), original.length + extraElements.length));</span><br><span class="line">        System.arraycopy(original, <span class="number">0</span>, combined, <span class="number">0</span>, original.length);</span><br><span class="line">        System.arraycopy(extraElements, <span class="number">0</span>, combined, original.length, extraElements.length);</span><br><span class="line">        jlrField.set(instance, combined);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">V19</span> </span>&#123;</span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="title">V19</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="comment">//手动加载类</span></span><br><span class="line">        <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">install</span><span class="params">(ClassLoader loader, List&lt;File&gt; additionalClassPathEntries,</span></span></span><br><span class="line"><span class="params"><span class="function">                                    File optimizedDirectory)</span> <span class="keyword">throws</span> IllegalArgumentException,</span></span><br><span class="line"><span class="function">                IllegalAccessException, NoSuchFieldException, InvocationTargetException,</span></span><br><span class="line"><span class="function">                NoSuchMethodException </span>&#123;</span><br><span class="line">   </span><br><span class="line">            Field pathListField = findField(loader, <span class="string">&quot;pathList&quot;</span>);</span><br><span class="line">            Object dexPathList = pathListField.get(loader);</span><br><span class="line">            ArrayList suppressedExceptions = <span class="keyword">new</span> ArrayList();</span><br><span class="line">            Log.d(TAG, <span class="string">&quot;Build.VERSION.SDK_INT &quot;</span> + Build.VERSION.SDK_INT);</span><br><span class="line">            <span class="keyword">if</span> (Build.VERSION.SDK_INT &gt;= <span class="number">23</span>) &#123;</span><br><span class="line">                <span class="comment">//通过反射加载类</span></span><br><span class="line">                expandFieldArray(dexPathList, <span class="string">&quot;dexElements&quot;</span>, makePathElements(dexPathList, <span class="keyword">new</span></span><br><span class="line">                                ArrayList(additionalClassPathEntries), optimizedDirectory,</span><br><span class="line">                        suppressedExceptions));</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                expandFieldArray(dexPathList, <span class="string">&quot;dexElements&quot;</span>, makeDexElements(dexPathList, <span class="keyword">new</span></span><br><span class="line">                                ArrayList(additionalClassPathEntries), optimizedDirectory,</span><br><span class="line">                        suppressedExceptions));</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (suppressedExceptions.size() &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                Iterator suppressedExceptionsField = suppressedExceptions.iterator();</span><br><span class="line"></span><br><span class="line">                <span class="keyword">while</span> (suppressedExceptionsField.hasNext()) &#123;</span><br><span class="line">                    IOException dexElementsSuppressedExceptions = (IOException)</span><br><span class="line">                            suppressedExceptionsField.next();</span><br><span class="line">                    Log.w(<span class="string">&quot;MultiDex&quot;</span>, <span class="string">&quot;Exception in makeDexElement&quot;</span>,</span><br><span class="line">                            dexElementsSuppressedExceptions);</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                Field suppressedExceptionsField1 = findField(loader,</span><br><span class="line">                        <span class="string">&quot;dexElementsSuppressedExceptions&quot;</span>);</span><br><span class="line">                IOException[] dexElementsSuppressedExceptions1 = (IOException[]) ((IOException[])</span><br><span class="line">                        suppressedExceptionsField1.get(loader));</span><br><span class="line">                <span class="keyword">if</span> (dexElementsSuppressedExceptions1 == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    dexElementsSuppressedExceptions1 = (IOException[]) suppressedExceptions</span><br><span class="line">                            .toArray(<span class="keyword">new</span> IOException[suppressedExceptions.size()]);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    IOException[] combined = <span class="keyword">new</span> IOException[suppressedExceptions.size() +</span><br><span class="line">                            dexElementsSuppressedExceptions1.length];</span><br><span class="line">                    suppressedExceptions.toArray(combined);</span><br><span class="line">                    System.arraycopy(dexElementsSuppressedExceptions1, <span class="number">0</span>, combined,</span><br><span class="line">                            suppressedExceptions.size(), dexElementsSuppressedExceptions1.length);</span><br><span class="line">                    dexElementsSuppressedExceptions1 = combined;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                suppressedExceptionsField1.set(loader, dexElementsSuppressedExceptions1);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">private</span> <span class="keyword">static</span> Object[] makeDexElements(Object dexPathList,</span><br><span class="line">                                                ArrayList&lt;File&gt; files, File</span><br><span class="line">                                                        optimizedDirectory,</span><br><span class="line">                                                ArrayList&lt;IOException&gt; suppressedExceptions) <span class="keyword">throws</span></span><br><span class="line">                IllegalAccessException, InvocationTargetException, NoSuchMethodException &#123;</span><br><span class="line"></span><br><span class="line">            Method makeDexElements = findMethod(dexPathList, <span class="string">&quot;makeDexElements&quot;</span>, <span class="keyword">new</span></span><br><span class="line">                    Class[]&#123;ArrayList.class, File.class, ArrayList.class&#125;);</span><br><span class="line">            <span class="keyword">return</span> ((Object[]) makeDexElements.invoke(dexPathList, <span class="keyword">new</span> Object[]&#123;files,</span><br><span class="line">                    optimizedDirectory, suppressedExceptions&#125;));</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * A wrapper around</span></span><br><span class="line"><span class="comment">     * &#123;<span class="doctag">@code</span> private static final dalvik.system.DexPathList#makePathElements&#125;.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Object[] makePathElements(</span><br><span class="line">            Object dexPathList, ArrayList&lt;File&gt; files, File optimizedDirectory,</span><br><span class="line">            ArrayList&lt;IOException&gt; suppressedExceptions)</span><br><span class="line">            <span class="keyword">throws</span> IllegalAccessException, InvocationTargetException, NoSuchMethodException &#123;</span><br><span class="line"></span><br><span class="line">        Method makePathElements;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            makePathElements = findMethod(dexPathList, <span class="string">&quot;makePathElements&quot;</span>, List.class, File.class,</span><br><span class="line">                    List.class);</span><br><span class="line">        &#125; <span class="keyword">catch</span> (NoSuchMethodException e) &#123;</span><br><span class="line">            Log.e(TAG, <span class="string">&quot;NoSuchMethodException: makePathElements(List,File,List) failure&quot;</span>);</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                makePathElements = findMethod(dexPathList, <span class="string">&quot;makePathElements&quot;</span>, ArrayList.class, File.class, ArrayList.class);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (NoSuchMethodException e1) &#123;</span><br><span class="line">                Log.e(TAG, <span class="string">&quot;NoSuchMethodException: makeDexElements(ArrayList,File,ArrayList) failure&quot;</span>);</span><br><span class="line">                <span class="keyword">try</span> &#123;</span><br><span class="line">                    Log.e(TAG, <span class="string">&quot;NoSuchMethodException: try use v19 instead&quot;</span>);</span><br><span class="line">                    <span class="keyword">return</span> V19.makeDexElements(dexPathList, files, optimizedDirectory, suppressedExceptions);</span><br><span class="line">                &#125; <span class="keyword">catch</span> (NoSuchMethodException e2) &#123;</span><br><span class="line">                    Log.e(TAG, <span class="string">&quot;NoSuchMethodException: makeDexElements(List,File,List) failure&quot;</span>);</span><br><span class="line">                    <span class="keyword">throw</span> e2;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> (Object[]) makePathElements.invoke(dexPathList, files, optimizedDirectory, suppressedExceptions);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">byte</span>[] getBytes(File file) <span class="keyword">throws</span> Exception &#123;</span><br><span class="line">        RandomAccessFile r = <span class="keyword">new</span> RandomAccessFile(file, <span class="string">&quot;r&quot;</span>);</span><br><span class="line">        <span class="keyword">byte</span>[] buffer = <span class="keyword">new</span> <span class="keyword">byte</span>[(<span class="keyword">int</span>) r.length()];</span><br><span class="line">        r.readFully(buffer);</span><br><span class="line">        r.close();</span><br><span class="line">        <span class="keyword">return</span> buffer;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>此时还有一个问题，我们的app被解压可以看到<code>application</code>,所以我们应该将获取密码，和密钥写道<code>native</code>中，因为<code>native</code>时二进制文件反编译非常困难</p>
+<p>微信将<code>apk</code>重要的<code>dex</code>文件需要在网络下载在<code>native</code>解密</p>
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">署名-非商业性使用-相同方式共享 4.0 国际</a> 许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="header cap theme"><span>接下来阅读</span></section><section class="body fs14"><a id="next" href="/blog/2021-09-23-%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/">适配器模式<span class="note">较早</span></a><div class="line"></div><div class="line"></div><a id="more" href="/blog/archives">检索全部文章</a></section></div>
+
+
+
+
+
+
+  <div class='related-wrap md reveal' id="comments">
+    <div class='cmt-title cap theme'>
+      快来参与讨论吧
+    </div>
+    <div class='cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="liwentuo/blog-comments" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="false" branch="main"></div>
+
+    </div>
+  </div>
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs14">博客</span><a href="/">近期发布</a><a href="/blog/categories/">分类</a><a href="/blog/tags/">标签</a><a href="/blog/archives/">归档</a></div><div class="sitemap-group"><span class="fs14">项目</span><a href="/wiki/tags/%E5%BC%80%E6%BA%90%E5%BA%93/">开源库</a><a href="/wiki/tags/%E5%AE%9E%E7%94%A8%E8%84%9A%E6%9C%AC/">实用脚本</a><a href="/wiki/tags/%E5%8D%9A%E5%AE%A2%E4%B8%BB%E9%A2%98/">博客主题</a><a href="/wiki/tags/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/">应用程序</a></div><div class="sitemap-group"><span class="fs14">社交</span><a href="/friends/">友链</a><a href="/about/#comments">留言板</a></div><div class="sitemap-group"><span class="fs14">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/liwentuo">GitHub</a></div></div><div class="text"><p>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+<p>本站由 <a href="http://liwentuo.github.io/">@david</a> 创建，使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.5.1" title="v1.5.1">Stellar</a> 作为主题，您可以在 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/xaoxuu.github.io/">GitHub</a> 找到本站源码。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.5.1';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js',
+    sitesjs: '/js/plugins/sites.js',
+    friendsjs: '/js/plugins/friends.js',
+  };
+
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.3.1/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@6/swiper-bundle.min.css","js":"https://unpkg.com/swiper@6/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+  <script>
+  function loadBeaudar() {
+    const els = document.querySelectorAll("#comments #beaudar");
+    if (els.length === 0) return;
+    els.forEach((el, i) => {
+      try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.log(error);
+      }
+      var script = document.createElement('script');
+      script.src = 'https://beaudar.lipk.org/client.js';
+      script.async = true;
+      for (let key of Object.keys(el.attributes)) {
+        let attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+    });
+  }
+  window.addEventListener('DOMContentLoaded', (event) => {
+      loadBeaudar();
+  });
+</script>
+
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
