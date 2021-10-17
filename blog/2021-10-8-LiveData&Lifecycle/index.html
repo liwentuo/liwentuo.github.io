@@ -20,12 +20,12 @@
   <title>LiveData&Lifecycle - Mark</title>
 
   
-    <meta name="description" content="LiveData&amp;Lifecycle界面控制器 Activity + Fragment UI control对数据的访问 1.Activity 显示数据的同时也会持有数据，会导致Activity和Frament过于庞大2.Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOMLiveData定义: LiveData是一个可以被观察的数据持有类,它可">
+    <meta name="description" content="界面控制器 Activity + Fragment UI control对数据的访问 1.Activity 显示数据的同时也会持有数据，会导致Activity和Frament过于庞大2.Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOMLiveData定义: LiveData是一个可以被观察的数据持有类,它可以感知并遵循Activity.Fragmen">
 <meta property="og:type" content="article">
 <meta property="og:title" content="LiveData&amp;Lifecycle">
 <meta property="og:url" content="http://liwentuo.github.io/blog/2021-10-8-LiveData&Lifecycle/">
 <meta property="og:site_name" content="Mark">
-<meta property="og:description" content="LiveData&amp;Lifecycle界面控制器 Activity + Fragment UI control对数据的访问 1.Activity 显示数据的同时也会持有数据，会导致Activity和Frament过于庞大2.Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOMLiveData定义: LiveData是一个可以被观察的数据持有类,它可">
+<meta property="og:description" content="界面控制器 Activity + Fragment UI control对数据的访问 1.Activity 显示数据的同时也会持有数据，会导致Activity和Frament过于庞大2.Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOMLiveData定义: LiveData是一个可以被观察的数据持有类,它可以感知并遵循Activity.Fragmen">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://i.loli.net/2021/10/10/Liw8FE49bQO5x3D.png">
 <meta property="og:image" content="https://i.loli.net/2021/10/10/7ciY29KPwTtF8h4.png">
@@ -88,7 +88,7 @@
 
 <article class='content md post'>
 <h1 class="article-title"><span>LiveData&Lifecycle</span></h1>
-<h1 id="LiveData-amp-Lifecycle"><a href="#LiveData-amp-Lifecycle" class="headerlink" title="LiveData&amp;Lifecycle"></a>LiveData&amp;Lifecycle</h1><h3 id="界面控制器-Activity-Fragment"><a href="#界面控制器-Activity-Fragment" class="headerlink" title="界面控制器 Activity + Fragment"></a>界面控制器 Activity + Fragment</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/10/10/Liw8FE49bQO5x3D.png"></p>
+<h3 id="界面控制器-Activity-Fragment"><a href="#界面控制器-Activity-Fragment" class="headerlink" title="界面控制器 Activity + Fragment"></a>界面控制器 Activity + Fragment</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/10/10/Liw8FE49bQO5x3D.png"></p>
 <h3 id="UI-control对数据的访问"><a href="#UI-control对数据的访问" class="headerlink" title="UI control对数据的访问"></a>UI control对数据的访问</h3><p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/10/10/7ciY29KPwTtF8h4.png"></p>
 <h4 id="1-Activity-显示数据的同时也会持有数据，会导致Activity和Frament过于庞大"><a href="#1-Activity-显示数据的同时也会持有数据，会导致Activity和Frament过于庞大" class="headerlink" title="1.Activity 显示数据的同时也会持有数据，会导致Activity和Frament过于庞大"></a>1.Activity 显示数据的同时也会持有数据，会导致Activity和Frament过于庞大</h4><h4 id="2-Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOM"><a href="#2-Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOM" class="headerlink" title="2.Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOM"></a>2.Activity不持有数据，那么可能会出现数据的生命周期与Activity不一致可能会出现OOM</h4><h3 id="LiveData"><a href="#LiveData" class="headerlink" title="LiveData"></a>LiveData</h3><p>定义:<code> LiveData</code>是一个可以被观察的数据持有类,它可以感知并遵循Activity.<code>Fragment</code>等组件的生命周期。正是由于<code>LiveData</code>对组件生命周期可感知特点,因此可以做到仅在组件处于生命周期的激活状态时才更新U数据。 </p>
 <p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://i.loli.net/2021/10/10/FtKvMRIDHVmnTlS.png"></p>
@@ -100,7 +100,7 @@
 
 </article>
 
-<div class="related-wrap reveal" id="read-next"><section class="header cap theme"><span>接下来阅读</span></section><section class="body fs14"><a id="next" href="/blog/2021-10-10-%E5%8D%A1%E9%A1%BF%E7%9B%91%E6%8E%A7/">App卡顿监控<span class="note">较早</span></a><div class="line"></div><div class="line"></div><a id="more" href="/blog/archives">检索全部文章</a></section></div>
+<div class="related-wrap reveal" id="read-next"><section class="header cap theme"><span>接下来阅读</span></section><section class="body fs14"><a id="next" href="/blog/2021-10-10-%E5%8D%A1%E9%A1%BF%E7%9B%91%E6%8E%A7/">App卡顿监控<span class="note">较早</span></a><div class="line"></div><a id="prev" href="/blog/2021-10-17-Compose%E5%85%A5%E9%97%A8/">Compose 快速入门<span class="note">较新</span></a><div class="line"></div><a id="more" href="/blog/archives">检索全部文章</a></section></div>
 
 
 
