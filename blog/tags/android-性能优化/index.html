@@ -17,13 +17,13 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" content="#f8f8f8">
-  <title>标签：APP - Mark</title>
+  <title>标签：Android 性能优化 - Mark</title>
 
   
     <meta name="description" content="David 目前是一个 Android 开发者。在业余时间也开发了 MkArout ，更多的作品可以去项目主页查看，希望大家喜欢～">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Mark">
-<meta property="og:url" content="http://liwentuo.github.io/blog/tags/app/">
+<meta property="og:url" content="http://liwentuo.github.io/blog/tags/android-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">
 <meta property="og:site_name" content="Mark">
 <meta property="og:description" content="David 目前是一个 Android 开发者。在业余时间也开发了 MkArout ，更多的作品可以去项目主页查看，希望大家喜欢～">
 <meta property="og:locale" content="zh_CN">
@@ -105,7 +105,7 @@
     
     
       
-        <a class='active' href='/blog/tags'>标签：APP</a>
+        <a class='active' href='/blog/tags'>标签：Android 性能优化</a>
       
     
     
@@ -116,7 +116,11 @@
   </nav>
 </div>
 
-  <div class="post-list post"><a class="post-card post " href="/blog/2021-09-25-apk%E5%8A%A0%E5%9B%BA/"><article class="md">
+  <div class="post-list post"><a class="post-card post " href="/blog/2021-10-10-%E5%8D%A1%E9%A1%BF%E7%9B%91%E6%8E%A7/"><article class="md">
+<h2 class="post-title">App卡顿监控</h2><div class="excerpt"><p>Matix接入1.在gradle.properties中添加Matrix 版本号MATRIX_VERSION=2.0.0-beta
+
+2.在project.gradle中classpath (&quot;com.tencent.matrix:matrix-gradle-plugin:$&#123;MATRIX_VERSION&#125;&quot;) &#123; changing = tr...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-10-09T16:00:00.000Z">2021年10月10日</time></span><span class="cap breadcrumb">Android 性能优化</span><div>
+</article></a><a class="post-card post " href="/blog/2021-09-25-apk%E5%8A%A0%E5%9B%BA/"><article class="md">
 <h2 class="post-title">APK加固</h2><div class="excerpt"><p>apk反编译反编译流程图
 反编译apk构造
 res：存放资源文件
@@ -128,7 +132,15 @@ AndroidManifest:清单文件
 
 此时我们需要将核心代码加密，非核心代码则不需要加密
 apk加固（防止反编译）
-将核心代码加密，非核心代码则...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-09-23T16:00:00.000Z">2021年9月24日</time></span><span class="cap breadcrumb">APK加固</span><div>
+将核心代码加密，非核心代码则...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-09-23T16:00:00.000Z">2021年9月24日</time></span><span class="cap breadcrumb">Android 性能优化</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-21-%E5%B8%83%E5%B1%80%E5%8A%A0%E8%BD%BD%E8%80%97%E6%97%B6/"><article class="md">
+<h2 class="post-title">View 加载耗时分析</h2><div class="excerpt"><p>布局加载原理我简单的绘了一张流程图，根据这张图配合接下来的源码开始我们的工作吧：
+
+废话不多说，直接从 setContentView 作为切入点，分析 Activity 的布局加载原理。
+Activity
+Activity#setContentView
+
+//Activity.javapublic void setContentView(@LayoutRes int layoutResID)...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android 性能优化</span><div>
 </article></a></div>
   
 

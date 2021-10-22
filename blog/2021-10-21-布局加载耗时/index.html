@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 5.4.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  <title>View 加载耗时分析 - Mark</title>
+
+  
+    <meta name="description" content="布局加载原理我简单的绘了一张流程图，根据这张图配合接下来的源码开始我们的工作吧：  废话不多说，直接从 setContentView 作为切入点，分析 Activity 的布局加载原理。 Activity Activity#setContentView  &#x2F;&#x2F;Activity.javapublic void setContentView(@LayoutRes int layoutResID) &amp;#">
+<meta property="og:type" content="article">
+<meta property="og:title" content="View 加载耗时分析">
+<meta property="og:url" content="http://liwentuo.github.io/blog/2021-10-21-%E5%B8%83%E5%B1%80%E5%8A%A0%E8%BD%BD%E8%80%97%E6%97%B6/">
+<meta property="og:site_name" content="Mark">
+<meta property="og:description" content="布局加载原理我简单的绘了一张流程图，根据这张图配合接下来的源码开始我们的工作吧：  废话不多说，直接从 setContentView 作为切入点，分析 Activity 的布局加载原理。 Activity Activity#setContentView  &#x2F;&#x2F;Activity.javapublic void setContentView(@LayoutRes int layoutResID) &amp;#">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/2173870-23d73351a434cd2d.png">
+<meta property="og:image" content="https://upload-images.jianshu.io/upload_images/2173870-28e7c1820867eb92.png">
+<meta property="article:published_time" content="2021-08-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-23T16:00:00.000Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Android 性能优化">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://upload-images.jianshu.io/upload_images/2173870-23d73351a434cd2d.png">
+  
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Mark" type="application/atom+xml">
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+</head>
+
+<body>
+  
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+
+<header class="header">
+
+<div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.2/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.loli.net/2021/09/22/hsX8ka5zQJeGDUb.jpg" onerror="javascript:this.classList.add('error');this.src='https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.1/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Mark</div><div class="sub normal cap">Daivd</div><div class="sub hover cap" style="opacity:0">angle.lwt@qq.com</div></a></div>
+<nav class="menu dis-select"><a class="nav-item active" href="/">博客</a><a class="nav-item" href="/wiki/">项目</a><a class="nav-item" href="/notes/">便笺</a><a class="nav-item" href="/about/">关于Mark</a></nav></header>
+
+<div class="widgets">
+
+<div class="widget-wrap single" id="toc"><div class="widget-header cap dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Activity"><span class="toc-text">Activity</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LayoutInflater"><span class="toc-text">LayoutInflater</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LayoutInflater-%E5%A4%A7%E8%87%B4%E4%BB%8B%E7%BB%8D"><span class="toc-text">LayoutInflater 大致介绍</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#LayoutInflater-Factory"><span class="toc-text">LayoutInflater.Factory</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Hook%E6%8E%A7%E4%BB%B6%E7%9A%84%E5%8A%A0%E8%BD%BD%E8%80%97%E6%97%B6"><span class="toc-text">Hook控件的加载耗时</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%A6%82%E6%AD%A4%E6%88%91%E4%BB%AC%E5%B0%B1%E5%8F%AF%E7%AD%89%E5%BE%85%E5%8A%A0%E8%BD%BD%E8%80%97%E6%97%B6%E7%9A%84%E5%B8%83%E5%B1%80%E4%BA%86"><span class="toc-text">如此我们就可等待加载耗时的布局了</span></a></li></ol></div></div></div>
+
+
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" title="GitHub" href="https://github.com/liwentuo" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/08a41b181ce68.svg"/></a><a class="social" title="Unsplash" href="https://unsplash.com/@angledaivd" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/3616429.svg"/></a><a class="social" title="Comments" href="/about/#comments" rel="noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/942ebbf1a4b91.svg"/></a></div></footer>
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">Mark</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/blog/categories/android-%E6%80%A7%E8%83%BD%E4%BC%98%E5%8C%96/">Android 性能优化</a></div><div id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></div></div>
+
+<article class='content md post'>
+<h1 class="article-title"><span>View 加载耗时分析</span></h1>
+<h1 id="布局加载原理"><a href="#布局加载原理" class="headerlink" title="布局加载原理"></a>布局加载原理</h1><p>我简单的绘了一张流程图，根据这张图配合接下来的源码开始我们的工作吧：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://upload-images.jianshu.io/upload_images/2173870-23d73351a434cd2d.png"></p>
+<p>废话不多说，直接从 <code>setContentView</code> 作为切入点，分析 <code>Activity</code> 的布局加载原理。</p>
+<h2 id="Activity"><a href="#Activity" class="headerlink" title="Activity"></a>Activity</h2><ul>
+<li><code>Activity#setContentView</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//Activity.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(<span class="meta">@LayoutRes</span> <span class="keyword">int</span> layoutResID)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//①</span></span><br><span class="line">    getWindow().setContentView(layoutResID);</span><br><span class="line">    initWindowDecorActionBar();</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在①处 getWindow() 实际返回的是 Window 的实现类<code>PhoneWindow</code>。</p>
+<ul>
+<li><code>PhoneWindow#setContentView</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//PhoneWindow.java</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setContentView</span><span class="params">(<span class="keyword">int</span> layoutResID)</span> </span>&#123;</span><br><span class="line">    </span><br><span class="line">    ...   </span><br><span class="line">    <span class="keyword">if</span> (hasFeature(FEATURE_CONTENT_TRANSITIONS)) &#123;</span><br><span class="line">        <span class="keyword">final</span> Scene newScene = Scene.getSceneForLayout(mContentParent, layoutResID,</span><br><span class="line">                getContext());</span><br><span class="line">        transitionTo(newScene);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//①</span></span><br><span class="line">        mLayoutInflater.inflate(layoutResID, mContentParent);</span><br><span class="line">    &#125;</span><br><span class="line">    ...</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在①处将加载·layoutResID·功能交给了 <code>LayoutInflater</code>布局加载器。</p>
+<h2 id="LayoutInflater"><a href="#LayoutInflater" class="headerlink" title="LayoutInflater"></a>LayoutInflater</h2><p>代码跟进到<code>LayoutInflater</code>，在深入源码前，先来大体了解一下 <code>LayoutInflater</code> 的作用，这里拷贝了源码的注释，从注释来看，它负责将 xml 的资源文件加载为一个 View 这样的一个功能。</p>
+<p>所以这个过程会涉及两个步骤：</p>
+<ol>
+<li>通过<code>IO</code>读取<code>xml</code>文件。</li>
+<li>通过<code>反射</code>来<code>创建</code>对应的<code> View</code>。</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Instantiates a layout XML file into its corresponding &#123;<span class="doctag">@link</span> android.view.View&#125;</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@SystemService(Context.LAYOUT_INFLATER_SERVICE)</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">LayoutInflater</span> </span>&#123;...&#125;</span><br></pre></td></tr></table></figure>
+
+<p>下面继续跟进源码来分析 inflate 的内部实现：</p>
+<ul>
+<li><code>LayoutInflater#inflate(@LayoutRes int resource, @Nullable ViewGroup root, boolean attachToRoot)</code></li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//LayoutInflater.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(<span class="meta">@LayoutRes</span> <span class="keyword">int</span> resource, <span class="meta">@Nullable</span> ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> Resources res = getContext().getResources();</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//①</span></span><br><span class="line">    <span class="keyword">final</span> XmlResourceParser parser = res.getLayout(resource);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//②</span></span><br><span class="line">        <span class="keyword">return</span> inflate(parser, root, attachToRoot);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        parser.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>①通过<code>res.getLayout</code>得到一个 XmlResourceParser ，XmlResourceParser 是用于解析要加载的那个布局。②根据返回的 parser 创建对应的 View 对象。这两个步骤就是我们所说的 <code>通过 IO 读取 xml 文件</code>和<code>通过反射来创建对应的 View。</code></p>
+<ul>
+<li>Resource#getLayout</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//Resources.java</span></span><br><span class="line"><span class="meta">@NonNull</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> XmlResourceParser <span class="title">getLayout</span><span class="params">(<span class="meta">@LayoutRes</span> <span class="keyword">int</span> id)</span> <span class="keyword">throws</span> NotFoundException </span>&#123;</span><br><span class="line">    <span class="comment">//①</span></span><br><span class="line">    <span class="keyword">return</span> loadXmlResourceParser(id, <span class="string">&quot;layout&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//Resources.java</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Loads an XML parser for the specified file. ②</span></span><br><span class="line"><span class="comment"> *</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> id the resource identifier for the file</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@param</span> type the type of resource (used for logging)</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@return</span> a parser for the specified XML file</span></span><br><span class="line"><span class="comment"> * <span class="doctag">@throws</span> NotFoundException if the file could not be loaded</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">@NonNull</span></span><br><span class="line"><span class="function">XmlResourceParser <span class="title">loadXmlResourceParser</span><span class="params">(<span class="meta">@AnyRes</span> <span class="keyword">int</span> id, <span class="meta">@NonNull</span> String type)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> NotFoundException </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> TypedValue value = obtainTempTypedValue();</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="keyword">final</span> ResourcesImpl impl = mResourcesImpl;</span><br><span class="line">        impl.getValue(id, value, <span class="keyword">true</span>);</span><br><span class="line">        <span class="keyword">if</span> (value.type == TypedValue.TYPE_STRING) &#123;</span><br><span class="line">            <span class="keyword">return</span> impl.loadXmlResourceParser(value.string.toString(), id,</span><br><span class="line">                    value.assetCookie, type);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NotFoundException(<span class="string">&quot;Resource ID #0x&quot;</span> + Integer.toHexString(id)</span><br><span class="line">                + <span class="string">&quot; type #0x&quot;</span> + Integer.toHexString(value.type) + <span class="string">&quot; is not valid&quot;</span>);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        releaseTempTypedValue(value);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>① 最终通过调用loadXmlResourceParser获取到 XmlResourceParser ，在②中的注释可以看到<code>Loads an XML parser for the specified file.</code>可以看到这一步是将指定的 XML 格式的资源文件从<code>磁盘</code>中加载并解析为<code>XmlResourceParser</code>，便于接下来的解析工作。</p>
+<ul>
+<li>LayoutInflater#inflate(XmlPullParser parser, @Nullable ViewGroup root, boolean attachToRoot)</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//LayoutInflater.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(<span class="meta">@LayoutRes</span> <span class="keyword">int</span> resource, <span class="meta">@Nullable</span> ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> Resources res = getContext().getResources();</span><br><span class="line">    ...</span><br><span class="line">    <span class="comment">//①</span></span><br><span class="line">    <span class="keyword">final</span> XmlResourceParser parser = res.getLayout(resource);</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//②</span></span><br><span class="line">        <span class="keyword">return</span> inflate(parser, root, attachToRoot);</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        parser.close();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>我们再回过头看上面的①这步中得到一个<code>XmlResourceParser</code>对象了，也就是说已经通过<code>IO</code>从磁盘中加载到对应的布局文件，接下来就要解析这个 XML 的每一个节点来创建对应的 View ，接下来是执行②步骤创建对应的 View。下面来看另外一个 inflate 重载方法。</p>
+<ul>
+<li>LayoutInflater#inflate</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//LayoutInflater.java</span></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment"> * Inflate a new view hierarchy from the specified XML node. Throws</span></span><br><span class="line"><span class="comment"> * &#123;<span class="doctag">@link</span> InflateException&#125; if there is an error.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> View <span class="title">inflate</span><span class="params">(XmlPullParser parser, <span class="meta">@Nullable</span> ViewGroup root, <span class="keyword">boolean</span> attachToRoot)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span> (mConstructorArgs) &#123;</span><br><span class="line">        ...</span><br><span class="line">        View result = root;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line"></span><br><span class="line">            ...</span><br><span class="line">            <span class="keyword">final</span> String name = parser.getName();</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (TAG_MERGE.equals(name)) &#123;</span><br><span class="line">                <span class="keyword">if</span> (root == <span class="keyword">null</span> || !attachToRoot) &#123;</span><br><span class="line">                    <span class="keyword">throw</span> <span class="keyword">new</span> InflateException(<span class="string">&quot;&lt;merge /&gt; can be used only with a valid &quot;</span></span><br><span class="line">                            + <span class="string">&quot;ViewGroup root and attachToRoot=true&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                rInflate(parser, root, inflaterContext, attrs, <span class="keyword">false</span>);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">//①</span></span><br><span class="line">                <span class="comment">// Temp is the root view that was found in the xml</span></span><br><span class="line">                <span class="keyword">final</span> View temp = createViewFromTag(root, name, inflaterContext, attrs);</span><br><span class="line">                ViewGroup.LayoutParams params = <span class="keyword">null</span>;</span><br><span class="line">                <span class="keyword">if</span> (root != <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">                        System.out.println(<span class="string">&quot;Creating params from root: &quot;</span> +</span><br><span class="line">                                root);</span><br><span class="line">                    &#125;</span><br><span class="line">                    <span class="comment">// Create layout params that match root, if supplied</span></span><br><span class="line">                    params = root.generateLayoutParams(attrs);</span><br><span class="line">                    <span class="keyword">if</span> (!attachToRoot) &#123;</span><br><span class="line">                        <span class="comment">// Set the layout params for temp if we are not</span></span><br><span class="line">                        <span class="comment">// attaching. (If we are, we use addView, below)</span></span><br><span class="line">                        temp.setLayoutParams(params);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125;</span><br><span class="line"></span><br><span class="line">                <span class="comment">// Inflate all children under temp against its context.</span></span><br><span class="line">                rInflateChildren(parser, temp, attrs, <span class="keyword">true</span>);</span><br><span class="line">                <span class="keyword">if</span> (DEBUG) &#123;</span><br><span class="line">                    System.out.println(<span class="string">&quot;-----&gt; done inflating children&quot;</span>);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// We are supposed to attach all the views we found (int temp)</span></span><br><span class="line">                <span class="comment">// to root. Do that now.</span></span><br><span class="line">                <span class="keyword">if</span> (root != <span class="keyword">null</span> &amp;&amp; attachToRoot) &#123;</span><br><span class="line">                    <span class="comment">//②</span></span><br><span class="line">                    root.addView(temp, params);</span><br><span class="line">                &#125;</span><br><span class="line">                <span class="comment">// Decide whether to return the root that was passed in or the</span></span><br><span class="line">                <span class="comment">// top view found in xml.</span></span><br><span class="line">                <span class="keyword">if</span> (root == <span class="keyword">null</span> || !attachToRoot) &#123;</span><br><span class="line">                    result = temp;</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (XmlPullParserException e) &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br></pre></td></tr></table></figure>
+
+<p>我剔除了一部分代码，代码定位①处，我们看到执行了 <code>createViewFromTag</code> 就返回了一个<code> View 对象</code>，并在②处添加在根视图中<code>root</code>。接下来我们来跟进 <code>createViewFromTag</code> 方法，看看内部是如何实现<code>View</code>的创建的。</p>
+<ul>
+<li>LayoutInflater#createViewFromTag</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//LayoutInflater.java</span></span><br><span class="line"><span class="function">View <span class="title">createViewFromTag</span><span class="params">(View parent, String name, Context context, AttributeSet attrs,</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="keyword">boolean</span> ignoreThemeAttr)</span> </span>&#123;</span><br><span class="line">    ...    </span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        View view;</span><br><span class="line">        <span class="keyword">if</span> (mFactory2 != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//①</span></span><br><span class="line">            view = mFactory2.onCreateView(parent, name, context, attrs);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//②</span></span><br><span class="line">            view = mFactory.onCreateView(name, context, attrs);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            view = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">        <span class="keyword">if</span> (view == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> Object lastContext = mConstructorArgs[<span class="number">0</span>];</span><br><span class="line">            mConstructorArgs[<span class="number">0</span>] = context;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//③</span></span><br><span class="line">                <span class="keyword">if</span> (-<span class="number">1</span> == name.indexOf(<span class="string">&#x27;.&#x27;</span>)) &#123;</span><br><span class="line">                    view = onCreateView(parent, name, attrs);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    view = createView(name, <span class="keyword">null</span>, attrs);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                mConstructorArgs[<span class="number">0</span>] = lastContext;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> view;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InflateException e) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">    </span><br><span class="line">       </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在①处会判断是否设置了 <code>Factory2</code> ，如果设置了，那么会将<code>View</code>的创建过程交给<code>Factory2</code>这个工厂去做，同样道理，②处也做了同样的判断。当然如果都没有设置，那么创建 View 的过程将直接交给<code>LayoutInflater</code>去实现，也就是到③的位置<code> onCreateView</code> 。</p>
+<ul>
+<li>LayoutInflater#onCreateView</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//LayoutInflater.java</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">final</span> View <span class="title">createView</span><span class="params">(String name, String prefix, AttributeSet attrs)</span></span></span><br><span class="line"><span class="function">        <span class="keyword">throws</span> ClassNotFoundException, InflateException </span>&#123;</span><br><span class="line">    Constructor&lt;? extends View&gt; constructor = sConstructorMap.get(name);</span><br><span class="line">    <span class="keyword">if</span> (constructor != <span class="keyword">null</span> &amp;&amp; !verifyClassLoader(constructor)) &#123;</span><br><span class="line">        constructor = <span class="keyword">null</span>;</span><br><span class="line">        sConstructorMap.remove(name);</span><br><span class="line">    &#125;</span><br><span class="line">    Class&lt;? extends View&gt; clazz = <span class="keyword">null</span>;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        Trace.traceBegin(Trace.TRACE_TAG_VIEW, name);</span><br><span class="line">        <span class="keyword">if</span> (constructor == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// Class not found in the cache, see if it&#x27;s real, and try to add it</span></span><br><span class="line">            <span class="comment">//①</span></span><br><span class="line">            clazz = mContext.getClassLoader().loadClass(</span><br><span class="line">                    prefix != <span class="keyword">null</span> ? (prefix + name) : name).asSubclass(View.class);</span><br><span class="line">            <span class="keyword">if</span> (mFilter != <span class="keyword">null</span> &amp;&amp; clazz != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">boolean</span> allowed = mFilter.onLoadClass(clazz);</span><br><span class="line">                <span class="keyword">if</span> (!allowed) &#123;</span><br><span class="line">                    failNotAllowed(name, prefix, attrs);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">            <span class="comment">//②</span></span><br><span class="line">            constructor = clazz.getConstructor(mConstructorSignature);</span><br><span class="line">            constructor.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">            sConstructorMap.put(name, constructor);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="comment">// If we have a filter, apply it to cached constructor</span></span><br><span class="line">            <span class="keyword">if</span> (mFilter != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="comment">// Have we seen this name before?</span></span><br><span class="line">                Boolean allowedState = mFilterMap.get(name);</span><br><span class="line">                <span class="keyword">if</span> (allowedState == <span class="keyword">null</span>) &#123;</span><br><span class="line">                    <span class="comment">// New class -- remember whether it is allowed</span></span><br><span class="line">                    clazz = mContext.getClassLoader().loadClass(</span><br><span class="line">                            prefix != <span class="keyword">null</span> ? (prefix + name) : name).asSubclass(View.class);</span><br><span class="line">                    <span class="keyword">boolean</span> allowed = clazz != <span class="keyword">null</span> &amp;&amp; mFilter.onLoadClass(clazz);</span><br><span class="line">                    mFilterMap.put(name, allowed);</span><br><span class="line">                    <span class="keyword">if</span> (!allowed) &#123;</span><br><span class="line">                        failNotAllowed(name, prefix, attrs);</span><br><span class="line">                    &#125;</span><br><span class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (allowedState.equals(Boolean.FALSE)) &#123;</span><br><span class="line">                    failNotAllowed(name, prefix, attrs);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        Object lastContext = mConstructorArgs[<span class="number">0</span>];</span><br><span class="line">        <span class="keyword">if</span> (mConstructorArgs[<span class="number">0</span>] == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">// Fill in the context if not already within inflation.</span></span><br><span class="line">            mConstructorArgs[<span class="number">0</span>] = mContext;</span><br><span class="line">        &#125;</span><br><span class="line">        Object[] args = mConstructorArgs;</span><br><span class="line">        args[<span class="number">1</span>] = attrs;</span><br><span class="line">        <span class="comment">//③</span></span><br><span class="line">        <span class="keyword">final</span> View view = constructor.newInstance(args);</span><br><span class="line">        <span class="keyword">if</span> (view <span class="keyword">instanceof</span> ViewStub) &#123;</span><br><span class="line">            <span class="comment">// Use the same context when inflating ViewStub later.</span></span><br><span class="line">            <span class="keyword">final</span> ViewStub viewStub = (ViewStub) view;</span><br><span class="line">            viewStub.setLayoutInflater(cloneInContext((Context) args[<span class="number">0</span>]));</span><br><span class="line">        &#125;</span><br><span class="line">        mConstructorArgs[<span class="number">0</span>] = lastContext;</span><br><span class="line">        <span class="keyword">return</span> view;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (NoSuchMethodException e) &#123;</span><br><span class="line">        ...    </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>通过①类加载器加载 <code>View </code>对应的 <code>Class </code>对象，然后在②中获取<code>Class</code>对应的<code>Constructor</code> 对象，然后在③<code>反射</code>创建<code>View</code>对象。</p>
+<p>至此，我们大致走完 View 的创建过程，在 View 的加载中主要是分为两个过程，第一通过 IO 从磁盘中加载资源文件并封装为 XmlPullParser 对象，第二通过 XML 解析器解析 XML 并通过反射创建 View 对象。</p>
+<p>我们从源码的角度分析了 View 的加载过程，并且在上面还一个点没有跟进，那就是 Factory2 和 Factory 是使用的。我会下文中来通过 Factory2 来实战获取 View 加载的耗时时间。</p>
+<p>这里有两个需要关注的性能相关的问题：</p>
+<ul>
+<li>IO 读取</li>
+<li>反射创建 View。</li>
+</ul>
+<h1 id="View性能优化"><a href="#View性能优化" class="headerlink" title="View性能优化"></a>View性能优化</h1><p>在布局的加载中主要是分为两个过程，第一通过 IO 从磁盘中加载资源文件并封装为 <code>XmlPullParser</code> 对象，第二通过 <code>XML </code>解析器解析 XML 并通过反射创建 <code>View</code> 对象。</p>
+<p>如果 <code>View</code> 层级嵌套过深会导致：</p>
+<ul>
+<li>加长 IO 读取时间。</li>
+<li>加长反射时间。</li>
+<li>导致 GPU 绘制不能及时完成，出现卡顿现象。</li>
+</ul>
+<h2 id="LayoutInflater-大致介绍"><a href="#LayoutInflater-大致介绍" class="headerlink" title="LayoutInflater 大致介绍"></a>LayoutInflater 大致介绍</h2><p>这里拷贝了源码的注释，从注释来看，它负责将 xml 的布局文件加载为一个 View 这样的一个功能。</p>
+<p>这个过程会涉及两个步骤：</p>
+<ol>
+<li><p>通过 IO 读取 xml 文件。</p>
+</li>
+<li><p>通过反射来创建对应的 View。</p>
+</li>
+</ol>
+<h2 id="LayoutInflater-Factory"><a href="#LayoutInflater-Factory" class="headerlink" title="LayoutInflater.Factory"></a>LayoutInflater.Factory</h2><p>   这个接口是干嘛用的呢？我们上文分析提到，在创建  View 对象时，<code>LayoutInflater#createViewFromTag</code>中首先回去判断是否设置了 ①<code>Factory2</code> 或者 ②<code>Factory</code>，它会将 View 的创建工作交给这两个工厂类的其中一个去实现。</p>
+  <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//LayoutInflater.java</span></span><br><span class="line"><span class="function">View <span class="title">createViewFromTag</span><span class="params">(View parent, String name, Context context, AttributeSet attrs,</span></span></span><br><span class="line"><span class="params"><span class="function">        <span class="keyword">boolean</span> ignoreThemeAttr)</span> </span>&#123;</span><br><span class="line">    ...    </span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        View view;</span><br><span class="line">        <span class="keyword">if</span> (mFactory2 != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//①</span></span><br><span class="line">            view = mFactory2.onCreateView(parent, name, context, attrs);</span><br><span class="line">        &#125; <span class="keyword">else</span> <span class="keyword">if</span> (mFactory != <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="comment">//②</span></span><br><span class="line">            view = mFactory.onCreateView(name, context, attrs);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            view = <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">       </span><br><span class="line">        <span class="keyword">if</span> (view == <span class="keyword">null</span>) &#123;</span><br><span class="line">            <span class="keyword">final</span> Object lastContext = mConstructorArgs[<span class="number">0</span>];</span><br><span class="line">            mConstructorArgs[<span class="number">0</span>] = context;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                <span class="comment">//③</span></span><br><span class="line">                <span class="keyword">if</span> (-<span class="number">1</span> == name.indexOf(<span class="string">&#x27;.&#x27;</span>)) &#123;</span><br><span class="line">                    view = onCreateView(parent, name, attrs);</span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    view = createView(name, <span class="keyword">null</span>, attrs);</span><br><span class="line">                &#125;</span><br><span class="line">            &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">                mConstructorArgs[<span class="number">0</span>] = lastContext;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> view;</span><br><span class="line">    &#125; <span class="keyword">catch</span> (InflateException e) &#123;</span><br><span class="line">        ...</span><br><span class="line">    &#125;   </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看完上面的源码再来看看这个简易的操作图解:</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://upload-images.jianshu.io/upload_images/2173870-28e7c1820867eb92.png"></p>
+<p>下面我贴出来<code>Factory</code>的源码，我们从这个接口的注释也可以了解到它大致的作用，这是一个<code>Hook</code>操作，因此我们可以在这里做我们想做的事。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Factory</span> </span>&#123;</span><br><span class="line">    <span class="comment">/**</span></span><br><span class="line"><span class="comment">     * Hook you can supply that is called when inflating from a LayoutInflater.</span></span><br><span class="line"><span class="comment">     * You can use this to customize the tag names available in your XML</span></span><br><span class="line"><span class="comment">     * layout files.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * &lt;p&gt;</span></span><br><span class="line"><span class="comment">     * Note that it is good practice to prefix these custom names with your</span></span><br><span class="line"><span class="comment">     * package (i.e., com.coolcompany.apps) to avoid conflicts with system</span></span><br><span class="line"><span class="comment">     * names.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> name Tag name to be inflated.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> context The context the view is being created in.</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@param</span> attrs Inflation attributes as specified in XML file.</span></span><br><span class="line"><span class="comment">     *</span></span><br><span class="line"><span class="comment">     * <span class="doctag">@return</span> View Newly created view. Return null for the default</span></span><br><span class="line"><span class="comment">     *         behavior.</span></span><br><span class="line"><span class="comment">     */</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> View <span class="title">onCreateView</span><span class="params">(String name, Context context, AttributeSet attrs)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么们可以通过 Factory 可以做啥事呢？</p>
+<p>例如：可以全局修改 TextView 的颜色，字体等，这里推荐一篇张鸿洋的博文<a target="_blank" rel="noopener" href="https://blog.csdn.net/lmj623565791/article/details/51503977">Android 探究 LayoutInflater setFactory</a>里面介绍了 Factory 的一些使用方式。</p>
+<h2 id="Hook控件的加载耗时"><a href="#Hook控件的加载耗时" class="headerlink" title="Hook控件的加载耗时"></a>Hook控件的加载耗时</h2><p><code>LayoutInflaterCompat</code> 是 <code>support-v4</code> 兼容包下的一个类，通过 <code>setFactoty2</code> 方法给对应的 <code>getLayoutInflater()</code> 设置一个 <code>Factory</code>工厂，其内部就是给 LayoutInflater 的 mFactory2 赋值。我们知道布局的加载是通过 <code>LayoutInflater</code> 布局加载器去加载的，因此这里设置的 <code>Factory2</code> 可以在 <code>LayoutInflater</code> 加载每一个控件时进行<code>hook</code>操作，具体的实现如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">//MainActivity extends AppCompatActivity</span></span><br><span class="line"><span class="meta">@Override</span></span><br><span class="line"><span class="function"><span class="keyword">protected</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line">    <span class="comment">//Hook 每一个控件加载耗时</span></span><br><span class="line">    LayoutInflaterCompat.setFactory2(getLayoutInflater(), <span class="keyword">new</span> LayoutInflater.Factory2() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> View <span class="title">onCreateView</span><span class="params">(View parent, String name, Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">            <span class="comment">//①</span></span><br><span class="line">            <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">            <span class="comment">//②</span></span><br><span class="line">            View view = getDelegate().createView(parent, name, context, attrs);</span><br><span class="line">            <span class="comment">//③</span></span><br><span class="line">            <span class="keyword">long</span> cost = System.currentTimeMillis() - startTime;</span><br><span class="line">            Log.d(TAG, <span class="string">&quot;加载控件：&quot;</span> + name + <span class="string">&quot;耗时：&quot;</span> + cost);</span><br><span class="line">            <span class="keyword">return</span> view;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> View <span class="title">onCreateView</span><span class="params">(String name, Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">    <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line">    setContentView(R.layout.activity_main);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>在①处打点开始时间</li>
+<li>②处执行加载布局的工作，</li>
+<li>③位置结束点，输出对应的时间差即是该控件的加载时间。</li>
+</ul>
+<blockquote>
+<p>关于②处使用了 getDalegate().createView(…) 这个方法是在 <code>support-v7</code>兼容包下的 <code>AppCompatActivity</code> 中定义的。而如果项目中 BaseActivity 没有继承至  <code>AppCompatActivity</code> 那么②处就不能getDalegate().createView(…)这样写了。</p>
+</blockquote>
+<p>有些项目的 <code>BaseActivity</code> 是直接继承至 <code>FragmentActivity</code> ，那么这时我们该怎么去操作呢？</p>
+<p>我们再次回到 <code>LayoutInflater#createViewFromTag</code>源码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">//LayoutInflater.java</span></span><br><span class="line"><span class="keyword">if</span> (view == <span class="keyword">null</span>) &#123;</span><br><span class="line">    <span class="keyword">final</span> Object lastContext = mConstructorArgs[<span class="number">0</span>];</span><br><span class="line">    mConstructorArgs[<span class="number">0</span>] = context;</span><br><span class="line">    <span class="keyword">try</span> &#123;</span><br><span class="line">        <span class="comment">//①</span></span><br><span class="line">        <span class="keyword">if</span> (-<span class="number">1</span> == name.indexOf(<span class="string">&#x27;.&#x27;</span>)) &#123;</span><br><span class="line">            view = onCreateView(parent, name, attrs);</span><br><span class="line">        &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">            view = createView(name, <span class="keyword">null</span>, attrs);</span><br><span class="line">        &#125;</span><br><span class="line">    &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">        mConstructorArgs[<span class="number">0</span>] = lastContext;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>当没有设置 Factory2 ，Factory 或者 Factory#onCreateView，Factory2#onCreateView 返回 null 的情况，那么创建 View 的工作就交给 ①<code>onCreateView</code>方法。也就是说如果我们的 <code>Activity</code> 不是直接继承至 <code>AppCompatActivity</code>的话，那么就可以使用 <code>LayoutInflater#createView(name, null, attrs)</code>加载指定的控件。</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="meta">@Override</span></span><br><span class="line">   <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">onCreate</span><span class="params">(Bundle savedInstanceState)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">       LayoutInflater layoutInflater = LayoutInflater.from(<span class="keyword">this</span>.activity);</span><br><span class="line">       <span class="comment">// use introspection to allow a new Factory to be set</span></span><br><span class="line">       <span class="keyword">try</span> &#123;</span><br><span class="line">           Field field = LayoutInflater.class.getDeclaredField(<span class="string">&quot;mFactorySet&quot;</span>);</span><br><span class="line">           field.setAccessible(<span class="keyword">true</span>);</span><br><span class="line">           field.setBoolean(layoutInflater, <span class="keyword">false</span>);</span><br><span class="line">           LayoutInflaterCompat.setFactory2(layoutInflater, <span class="keyword">new</span> LayoutInflater.Factory2() &#123;</span><br><span class="line">               <span class="meta">@Override</span></span><br><span class="line">               <span class="function"><span class="keyword">public</span> View <span class="title">onCreateView</span><span class="params">(View parent, String name, Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">                   <span class="keyword">long</span> startTime = System.currentTimeMillis();</span><br><span class="line">                   View view = <span class="keyword">null</span>;</span><br><span class="line">                   <span class="keyword">try</span> &#123;</span><br><span class="line">                       view = getLayoutInflater().createView(name, <span class="keyword">null</span>, attrs);</span><br><span class="line">                   &#125; <span class="keyword">catch</span> (ClassNotFoundException e) &#123;</span><br><span class="line">                       e.printStackTrace();</span><br><span class="line">                   &#125;</span><br><span class="line">                   <span class="keyword">long</span> cost = System.currentTimeMillis() - startTime;</span><br><span class="line"></span><br><span class="line">                   Log.d(<span class="string">&quot;=========&quot;</span>, <span class="string">&quot;加载布局：&quot;</span> + name + <span class="string">&quot;耗时：&quot;</span> + cost);</span><br><span class="line">                   <span class="keyword">return</span> view;</span><br><span class="line">               &#125;</span><br><span class="line"></span><br><span class="line">               <span class="meta">@Override</span></span><br><span class="line">               <span class="function"><span class="keyword">public</span> View <span class="title">onCreateView</span><span class="params">(String name, Context context, AttributeSet attrs)</span> </span>&#123;</span><br><span class="line">                   <span class="keyword">return</span> <span class="keyword">null</span>;</span><br><span class="line">               &#125;</span><br><span class="line"></span><br><span class="line">       &#125;);</span><br><span class="line">           ;</span><br><span class="line">       &#125; <span class="keyword">catch</span> (NoSuchFieldException e) &#123;</span><br><span class="line">           Log.d(TAG, <span class="string">&quot;加载布局: &quot;</span> + e.getMessage());</span><br><span class="line">           <span class="comment">// ...</span></span><br><span class="line">       &#125; <span class="keyword">catch</span> (IllegalArgumentException e) &#123;</span><br><span class="line">           Log.d(TAG, <span class="string">&quot;加载布局: &quot;</span> + e.getMessage());</span><br><span class="line">           <span class="comment">// ...</span></span><br><span class="line">       &#125; <span class="keyword">catch</span> (IllegalAccessException e) &#123;</span><br><span class="line">           Log.d(TAG, <span class="string">&quot;加载布局: &quot;</span> + e.getMessage());</span><br><span class="line">           <span class="comment">// ...</span></span><br><span class="line">       &#125;</span><br><span class="line"></span><br><span class="line">       <span class="keyword">super</span>.onCreate(savedInstanceState);</span><br><span class="line"></span><br><span class="line">   &#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="如此我们就可等待加载耗时的布局了"><a href="#如此我们就可等待加载耗时的布局了" class="headerlink" title="如此我们就可等待加载耗时的布局了"></a>如此我们就可等待加载耗时的布局了</h2><figure class="highlight tex"><table><tr><td class="code"><pre><span class="line">2021-10-21 17:54:06.505 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseTextView耗时：3</span><br><span class="line">2021-10-21 17:54:06.512 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：6</span><br><span class="line">2021-10-21 17:54:06.516 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：4</span><br><span class="line">2021-10-21 17:54:06.521 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：4</span><br><span class="line">2021-10-21 17:54:06.533 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseTextView耗时：6</span><br><span class="line">2021-10-21 17:54:06.563 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseImageView耗时：28</span><br><span class="line">2021-10-21 17:54:06.600 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.seekbar.CustomIconAndTextSeekbar耗时：36</span><br><span class="line">2021-10-21 17:54:06.607 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：6</span><br><span class="line">2021-10-21 17:54:06.618 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：11</span><br><span class="line">2021-10-21 17:54:06.624 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：5</span><br><span class="line">2021-10-21 17:54:06.634 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseTextView耗时：5</span><br><span class="line">2021-10-21 17:54:06.637 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseTextView耗时：3</span><br><span class="line">2021-10-21 17:54:06.638 4032-4032/ltd.qisi.navi D/=========: 加载布局：androidx.constraintlayout.widget.ConstraintLayout耗时：0</span><br><span class="line">2021-10-21 17:54:06.647 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseButton耗时：8</span><br><span class="line">2021-10-21 17:54:06.651 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseButton耗时：3</span><br><span class="line">2021-10-21 17:54:06.657 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：5</span><br><span class="line">2021-10-21 17:54:06.662 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：4</span><br><span class="line">2021-10-21 17:54:06.666 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：4</span><br><span class="line">2021-10-21 17:54:06.672 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseTextView耗时：2</span><br><span class="line">2021-10-21 17:54:06.840 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseImageView耗时：167</span><br><span class="line">2021-10-21 17:54:06.990 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseImageView耗时：148</span><br><span class="line">2021-10-21 17:54:06.996 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseTextView耗时：6</span><br><span class="line">2021-10-21 17:54:07.002 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseTextView耗时：5</span><br><span class="line">2021-10-21 17:54:07.007 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：5</span><br><span class="line">2021-10-21 17:54:07.012 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：5</span><br><span class="line">2021-10-21 17:54:07.034 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseButton耗时：8</span><br><span class="line">2021-10-21 17:54:07.040 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseButton耗时：5</span><br><span class="line">2021-10-21 17:54:07.048 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseButton耗时：8</span><br><span class="line">2021-10-21 17:54:07.054 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：5</span><br><span class="line">2021-10-21 17:54:07.058 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：4</span><br><span class="line">2021-10-21 17:54:07.063 4032-4032/ltd.qisi.navi D/=========: 加载布局：View耗时：4</span><br><span class="line">2021-10-21 17:54:07.082 4032-4032/ltd.qisi.navi D/=========: 加载布局：ltd.qisi.uiguideline.controls.BaseSwitch耗时：16</span><br></pre></td></tr></table></figure>
+
+<p>对于 <code>LayoutInflater.Factory</code> 的 hook 机制，我们以<code>低侵入式</code>的方式获取到每一个控件的加载耗时。</p>
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用署名-非商业性使用-相同方式共享 4.0 国际许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="header cap theme"><span>接下来阅读</span></section><section class="body fs14"><a id="next" href="/blog/2021-10-8-Gradle%E7%BC%96%E8%AF%91%E4%BC%98%E5%8C%96/">Gradle编译优化<span class="note">较早</span></a><div class="line"></div><a id="prev" href="/blog/2021-10-8-ViewPager%E5%AE%9E%E7%8E%B0%E7%AB%96%E5%90%91%E6%BB%91%E5%8A%A8/">ViewPager实现竖向滑动<span class="note">较新</span></a><div class="line"></div><a id="more" href="/blog/archives">检索全部文章</a></section></div>
+
+
+
+
+
+
+  <div class='related-wrap md reveal' id="comments">
+    <div class='cmt-title cap theme'>
+      快来参与讨论吧
+    </div>
+    <div class='cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="liwentuo/blog-comments" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="false" branch="main"></div>
+
+    </div>
+  </div>
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs14">博客</span><a href="/">近期发布</a><a href="/blog/categories/">分类</a><a href="/blog/tags/">标签</a><a href="/blog/archives/">归档</a></div><div class="sitemap-group"><span class="fs14">项目</span><a href="/wiki/tags/%E5%BC%80%E6%BA%90%E5%BA%93/">开源库</a><a href="/wiki/tags/%E5%AE%9E%E7%94%A8%E8%84%9A%E6%9C%AC/">实用脚本</a><a href="/wiki/tags/%E5%8D%9A%E5%AE%A2%E4%B8%BB%E9%A2%98/">博客主题</a><a href="/wiki/tags/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/">应用程序</a></div><div class="sitemap-group"><span class="fs14">社交</span><a href="/friends/">友链</a><a href="/about/#comments">留言板</a></div><div class="sitemap-group"><span class="fs14">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/liwentuo">GitHub</a></div></div><div class="text"><p>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+<p>本站由 <a href="http://liwentuo.github.io/">@david</a> 创建，使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.5.1" title="v1.5.1">Stellar</a> 作为主题。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.5.1';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js',
+    sitesjs: '/js/plugins/sites.js',
+    friendsjs: '/js/plugins/friends.js',
+  };
+
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.3.1/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@6/swiper-bundle.min.css","js":"https://unpkg.com/swiper@6/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+  <script>
+  function loadBeaudar() {
+    const els = document.querySelectorAll("#comments #beaudar");
+    if (els.length === 0) return;
+    els.forEach((el, i) => {
+      try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.log(error);
+      }
+      var script = document.createElement('script');
+      script.src = 'https://beaudar.lipk.org/client.js';
+      script.async = true;
+      for (let key of Object.keys(el.attributes)) {
+        let attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+    });
+  }
+  window.addEventListener('DOMContentLoaded', (event) => {
+      loadBeaudar();
+  });
+</script>
+
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>

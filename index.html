@@ -133,7 +133,7 @@ UI control对数据的访问
 </article></a><a class="post-card post " href="/blog/2021-10-10-%E5%8D%A1%E9%A1%BF%E7%9B%91%E6%8E%A7/"><article class="md">
 <h2 class="post-title">App卡顿监控</h2><div class="excerpt"><p>Matix接入1.在gradle.properties中添加Matrix 版本号MATRIX_VERSION=2.0.0-beta
 
-2.在project.gradle中classpath (&quot;com.tencent.matrix:matrix-gradle-plugin:$&#123;MATRIX_VERSION&#125;&quot;) &#123; changing = tr...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-10-09T16:00:00.000Z">2021年10月10日</time></span><span class="cap breadcrumb">App性能优化</span><div>
+2.在project.gradle中classpath (&quot;com.tencent.matrix:matrix-gradle-plugin:$&#123;MATRIX_VERSION&#125;&quot;) &#123; changing = tr...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-10-09T16:00:00.000Z">2021年10月10日</time></span><span class="cap breadcrumb">Android 性能优化</span><div>
 </article></a><a class="post-card post " href="/blog/2021-10-12-okhttp%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/"><article class="md">
 <h2 class="post-title">Okhttp源码解析</h2><div class="excerpt"><p>OkHttp简介
 
@@ -152,19 +152,12 @@ AndroidManifest:清单文件
 
 此时我们需要将核心代码加密，非核心代码则不需要加密
 apk加固（防止反编译）
-将核心代码加密，非核心代码则...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-09-23T16:00:00.000Z">2021年9月24日</time></span><span class="cap breadcrumb">APK加固</span><div>
+将核心代码加密，非核心代码则...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-09-23T16:00:00.000Z">2021年9月24日</time></span><span class="cap breadcrumb">Android 性能优化</span><div>
 </article></a><a class="post-card post " href="/blog/2021-09-23-%E9%80%82%E9%85%8D%E5%99%A8%E6%A8%A1%E5%BC%8F/"><article class="md">
 <h2 class="post-title">适配器模式</h2><div class="excerpt"><p>适配器模式适配器模式（Adapter Pattern）是作为两个不兼容的接口之间的桥梁。这种类型的设计模式属于结构型模式，它结合了两个独立接口的功能。
 这种模式涉及到一个单一的类，该类负责加入独立的或不兼容的接口功能。举个真实的例子，读卡器是作为内存卡和笔记本之间的适配器。您将内存卡插入读卡器，再将读卡器插入笔记本，这样就可以通过笔记本来读取内存卡。
 我们通过下面的实例来演示适配器模式的使用...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-09-22T16:00:00.000Z">2021年9月23日</time></span><span class="cap breadcrumb">设计模式</span><div>
-</article></a><a class="post-card post " href="/blog/2021-10-8-ViewPager%E5%AE%9E%E7%8E%B0%E7%AB%96%E5%90%91%E6%BB%91%E5%8A%A8/"><article class="md">
-<h2 class="post-title">ViewPager实现竖向滑动</h2><div class="excerpt"><p>产品出了了新的需求，要求页面竖直滑动切换，本来打算使用ViewPager2但发现要改动代码实在太多所以就有了通过ViewPager实现竖直切换的想想法
-效果
-实现思路
- 把Touch事件的x，y坐标做一下交换，从原先的x坐标差值转变成y坐标的差值，正符合了我们手指从横向滑动转成了纵向滑动。再通过实现PageTransformer接口，改变view的平移方向，便实现了如上效果。
-
-/** * ...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android View</span><div>
-</article></a><a class="post-card post " href="/blog/RecycleView%E4%BE%A7%E6%BB%91%E5%88%A0%E9%99%A4/"><article class="md">
+</article></a><a class="post-card post " href="/blog/2021-08-24-RecycleView%E4%BE%A7%E6%BB%91%E5%88%A0%E9%99%A4/"><article class="md">
 <h2 class="post-title">RecycelView侧滑删除</h2><div class="excerpt"><p>实现效果
 ##实现思路
 
@@ -173,11 +166,35 @@ apk加固（防止反编译）
 
 实现代码自定义抽屉View
 /** * 滑动...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android View</span><div>
-</article></a><a class="post-card post " href="/blog/2021-10-8-Gradle%E7%BC%96%E8%AF%91%E4%BC%98%E5%8C%96/"><article class="md">
-<h2 class="post-title">Gradle编译优化</h2><div class="excerpt"><p>Gradle编译速度优化写kotlin很久了，一直以来都不太满意kotlin的编译速度，特别是项目中大量使用kapt 。但是也能忍受。但自从我的电脑让我玩坏了之后。编译速度一度让我怀疑人生，总感觉有人顺走了我的内存条。可惜我这里监控盲区😂，废话不多说让我们看看具体步骤优化前和优化后速度对
-编译前 构建总耗时：62734ms构建总耗时：62734ms构建时间：2021-09-29 15:56...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Gradle</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-8-ViewPager%E5%AE%9E%E7%8E%B0%E7%AB%96%E5%90%91%E6%BB%91%E5%8A%A8/"><article class="md">
+<h2 class="post-title">ViewPager实现竖向滑动</h2><div class="excerpt"><p>产品出了了新的需求，要求页面竖直滑动切换，本来打算使用ViewPager2但发现要改动代码实在太多所以就有了通过ViewPager实现竖直切换的想想法
+效果
+实现思路
+ 把Touch事件的x，y坐标做一下交换，从原先的x坐标差值转变成y坐标的差值，正符合了我们手指从横向滑动转成了纵向滑动。再通过实现PageTransformer接口，改变view的平移方向，便实现了如上效果。
+
+/** * ...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android View</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-21-%E5%B8%83%E5%B1%80%E5%8A%A0%E8%BD%BD%E8%80%97%E6%97%B6/"><article class="md">
+<h2 class="post-title">View 加载耗时分析</h2><div class="excerpt"><p>布局加载原理我简单的绘了一张流程图，根据这张图配合接下来的源码开始我们的工作吧：
+
+废话不多说，直接从 setContentView 作为切入点，分析 Activity 的布局加载原理。
+Activity
+Activity#setContentView
+
+//Activity.javapublic void setContentView(@LayoutRes int layoutResID)...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android 性能优化</span><div>
 </article></a></div>
   
+  <div class='paginator-wrap dis-select'>
+    <a class='paginator prev disable' href='/'>
+      <img src='https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.1/arrow/f049bbd4e88ec.svg'/>
+    </a>
+    <div class='paginator current'>
+      1<span class='sep'></span>2
+    </div>
+    <a class='paginator next' href='/page/2/'>
+      <img src='https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.1/arrow/064b95430caf4.svg'/>
+    </a>
+  </div>
+
 
 
 
