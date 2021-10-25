@@ -166,21 +166,10 @@ apk加固（防止反编译）
 
 实现代码自定义抽屉View
 /** * 滑动...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android View</span><div>
-</article></a><a class="post-card post " href="/blog/2021-10-8-ViewPager%E5%AE%9E%E7%8E%B0%E7%AB%96%E5%90%91%E6%BB%91%E5%8A%A8/"><article class="md">
-<h2 class="post-title">ViewPager实现竖向滑动</h2><div class="excerpt"><p>产品出了了新的需求，要求页面竖直滑动切换，本来打算使用ViewPager2但发现要改动代码实在太多所以就有了通过ViewPager实现竖直切换的想想法
-效果
-实现思路
- 把Touch事件的x，y坐标做一下交换，从原先的x坐标差值转变成y坐标的差值，正符合了我们手指从横向滑动转成了纵向滑动。再通过实现PageTransformer接口，改变view的平移方向，便实现了如上效果。
-
-/** * ...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android View</span><div>
-</article></a><a class="post-card post " href="/blog/2021-10-21-%E5%B8%83%E5%B1%80%E5%8A%A0%E8%BD%BD%E8%80%97%E6%97%B6/"><article class="md">
-<h2 class="post-title">View 加载耗时分析</h2><div class="excerpt"><p>布局加载原理我简单的绘了一张流程图，根据这张图配合接下来的源码开始我们的工作吧：
-
-废话不多说，直接从 setContentView 作为切入点，分析 Activity 的布局加载原理。
-Activity
-Activity#setContentView
-
-//Activity.javapublic void setContentView(@LayoutRes int layoutResID)...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android性能优化</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-21-Android%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E5%88%A8%E6%9E%90/"><article class="md">
+<h2 class="post-title">Android 内存泄露刨析</h2><div class="excerpt"><p></p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android性能优化</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-25-blog%E5%8A%A0%E5%AF%86/"><article class="md">
+<h2 class="post-title">Blog 加密</h2><div class="excerpt"><p>Here's something encrypted, password is required to continue reading.</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Blog</span><div>
 </article></a></div>
   
   <div class='paginator-wrap dis-select'>
