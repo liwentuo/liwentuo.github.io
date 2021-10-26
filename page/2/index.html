@@ -114,7 +114,20 @@
   </nav>
 </div>
 
-  <div class="post-list post"><a class="post-card post " href="/blog/2021-10-8-ViewPager%E5%AE%9E%E7%8E%B0%E7%AB%96%E5%90%91%E6%BB%91%E5%8A%A8/"><article class="md">
+  <div class="post-list post"><a class="post-card post " href="/blog/2021-08-24-RecycleView%E4%BE%A7%E6%BB%91%E5%88%A0%E9%99%A4/"><article class="md">
+<h2 class="post-title">RecycelView侧滑删除</h2><div class="excerpt"><p>实现效果
+##实现思路
+
+1.自定义一个HorizontalScrollView，重写onTouchEvent，主要覆盖ACTION_CANCEL事件，因为要做手指抬起自动item复原的效果，其他事件交给HorizontalScrollView。
+2.通过线性布局将删除按钮摆放到屏幕外，通过HorizontalScrollView来滑动进入屏幕
+
+实现代码自定义抽屉View
+/** * 滑动...</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android View</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-21-Android%E5%86%85%E5%AD%98%E6%B3%84%E6%BC%8F%E5%88%A8%E6%9E%90/"><article class="md">
+<h2 class="post-title">Android 内存泄露刨析</h2><div class="excerpt"><p></p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Android性能优化</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-25-blog%E5%8A%A0%E5%AF%86/"><article class="md">
+<h2 class="post-title">Blog 加密</h2><div class="excerpt"><p>Here's something encrypted, password is required to continue reading.</p></div><div class="meta cap"><span class="cap" id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></span><span class="cap breadcrumb">Blog</span><div>
+</article></a><a class="post-card post " href="/blog/2021-10-8-ViewPager%E5%AE%9E%E7%8E%B0%E7%AB%96%E5%90%91%E6%BB%91%E5%8A%A8/"><article class="md">
 <h2 class="post-title">ViewPager实现竖向滑动</h2><div class="excerpt"><p>产品出了了新的需求，要求页面竖直滑动切换，本来打算使用ViewPager2但发现要改动代码实在太多所以就有了通过ViewPager实现竖直切换的想想法
 效果
 实现思路
