@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang='zh-CN'>
+
+<head>
+  <meta name="generator" content="Hexo 5.4.0">
+  <meta charset="utf-8">
+  
+
+  <meta http-equiv='x-dns-prefetch-control' content='on' />
+  <link rel='dns-prefetch' href='https://cdn.jsdelivr.net'>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+  <meta name="renderer" content="webkit">
+  <meta name="force-rendering" content="webkit">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
+  <meta name="HandheldFriendly" content="True" >
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#f8f8f8">
+  <title>重拾Gradle - Mark</title>
+
+  
+    <meta name="description" content="工程构建工具从古老的 mk、make、cmake、qmake, 再到成熟的 ant、maven、ivy，最后到如今互联网时代的 sbt、gradle，经历了长久的历史演化与变迁。 Gradle 作为一款新生代的构建工具无疑是有它自身的巨大优势的，因此，掌握好 Gradle 构建工具的各种使用姿势与使用场景其重要性不言而喻。 此外，Gradle 已经成为 高级 Android 知识体系 必不可少的一">
+<meta property="og:type" content="article">
+<meta property="og:title" content="重拾Gradle">
+<meta property="og:url" content="http://liwentuo.github.io/blog/2021-11-2-%E9%87%8D%E8%AF%86Gradle/">
+<meta property="og:site_name" content="Mark">
+<meta property="og:description" content="工程构建工具从古老的 mk、make、cmake、qmake, 再到成熟的 ant、maven、ivy，最后到如今互联网时代的 sbt、gradle，经历了长久的历史演化与变迁。 Gradle 作为一款新生代的构建工具无疑是有它自身的巨大优势的，因此，掌握好 Gradle 构建工具的各种使用姿势与使用场景其重要性不言而喻。 此外，Gradle 已经成为 高级 Android 知识体系 必不可少的一">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/05bf4781812d4ab29c34bf9225f57f1b~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/78c035e5d3fb4040b7b0959bb5ba235b~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a1534456dbf54ceab861a10a4a1e8ecc~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f1b5a1c9e2c64a3da60b79b6d9a1e6a4~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bf923fff065c4e5c99693e9a2e311280~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/06cfe85b86e14948a3fb7a9119cdaec7~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2a018f50e2724dea872463ff07c617d5~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/30c70a60ab3d41c79ce5885639ac10de~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6a3173bc747a4868ae47e2ab2a40b921~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/874b6acb92da48b5a4609c98c4359424~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/59d0bdd78ad24cb382c1097ace8c7e80~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a7a946b452e747f8b616b008fe0ec11d~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b6e3f9f091884174abccc5551ddeb69b~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="og:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a17bc09031964a1cb223afeb32a967f4~tplv-k3u1fbpfcp-watermark.awebp">
+<meta property="article:published_time" content="2021-08-23T16:00:00.000Z">
+<meta property="article:modified_time" content="2021-08-23T16:00:00.000Z">
+<meta property="article:author" content="david">
+<meta property="article:tag" content="Gradle">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/05bf4781812d4ab29c34bf9225f57f1b~tplv-k3u1fbpfcp-watermark.awebp">
+  
+  
+
+  <!-- feed -->
+  
+    <link rel="alternate" href="/atom.xml" title="Mark" type="application/atom+xml">
+  
+
+  
+    
+<link rel="stylesheet" href="/css/main.css">
+
+  
+
+  
+
+  
+</head>
+
+<body>
+  
+
+
+  <div class='l_body' id='start'>
+    <aside class='l_left' layout='post'>
+    
+
+
+<header class="header">
+
+<div class="logo-wrap"><a class="avatar" href="/about/"><div class="bg" style="opacity:0;background-image:url(https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.2/avatar/round/rainbow64@3x.webp);"></div><img no-lazy class="avatar" src="https://i.loli.net/2021/09/22/hsX8ka5zQJeGDUb.jpg" onerror="javascript:this.classList.add('error');this.src='https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.1/image/2659360.svg';"></a><a class="title" href="/"><div class="main">Mark</div><div class="sub normal cap">Daivd</div><div class="sub hover cap" style="opacity:0">angle.lwt@qq.com</div></a></div>
+<nav class="menu dis-select"><a class="nav-item active" href="/">博客</a><a class="nav-item" href="/wiki/">项目</a><a class="nav-item" href="/notes/">便笺</a><a class="nav-item" href="/about/">关于Mark</a></nav></header>
+
+<div class="widgets">
+
+<div class="widget-wrap single" id="toc"><div class="widget-header cap dis-select"><span class="name">本文目录</span></div><div class="widget-body fs14"><div class="doc-tree active"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81Gradle-%E6%98%AF%E4%BB%80%E4%B9%88%EF%BC%9F"><span class="toc-text">1、Gradle 是什么？</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%BF%E7%94%A8-Gradle"><span class="toc-text">2、为什么使用 Gradle?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81Gradle-%E7%9A%84%E6%9E%84%E5%BB%BA%E6%B5%81%E7%A8%8B"><span class="toc-text">3、Gradle 的构建流程</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81%E5%8D%87%E7%BA%A7%E6%9C%80%E6%96%B0%E7%9A%84-Gradle-%E7%89%88%E6%9C%AC"><span class="toc-text">1、升级最新的 Gradle 版本</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81%E5%BC%80%E5%90%AF%E7%A6%BB%E7%BA%BF%E6%A8%A1%E5%BC%8F"><span class="toc-text">2、开启离线模式</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81%E9%85%8D%E7%BD%AE-AS-%E7%9A%84%E6%9C%80%E5%A4%A7%E5%A0%86%E5%86%85%E5%AD%98"><span class="toc-text">3、配置 AS 的最大堆内存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E3%80%81%E5%88%A0%E9%99%A4%E4%B8%8D%E5%BF%85%E8%A6%81%E7%9A%84-Moudle-%E6%88%96%E5%90%88%E5%B9%B6%E9%83%A8%E5%88%86-Module"><span class="toc-text">4、删除不必要的 Moudle 或合并部分 Module</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5%E3%80%81%E5%88%A0%E9%99%A4Module%E4%B8%AD%E7%9A%84%E6%97%A0%E7%94%A8%E6%96%87%E4%BB%B6"><span class="toc-text">5、删除Module中的无用文件</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#6%E3%80%81%E5%8E%BB%E9%99%A4%E9%A1%B9%E7%9B%AE%E4%B8%AD%E7%9A%84%E6%97%A0%E7%94%A8%E8%B5%84%E6%BA%90"><span class="toc-text">6、去除项目中的无用资源</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#7%E3%80%81%E4%BC%98%E5%8C%96%E7%AC%AC%E4%B8%89%E6%96%B9%E5%BA%93%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="toc-text">7、优化第三方库的使用</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E3%80%81%E4%BD%BF%E7%94%A8%E6%9B%B4%E5%B0%8F%E7%9A%84%E5%BA%93%E5%8E%BB%E6%9B%BF%E6%8D%A2%E7%8E%B0%E6%9C%89%E7%9A%84%E5%90%8C%E7%B1%BB%E5%9E%8B%E7%9A%84%E4%B8%89%E6%96%B9%E5%BA%93%E3%80%82"><span class="toc-text">1）、使用更小的库去替换现有的同类型的三方库。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89%E3%80%81%E4%BD%BF%E7%94%A8-exclude-%E6%9D%A5%E6%8E%92%E9%99%A4%E4%B8%89%E6%96%B9%E5%BA%93%E4%B8%AD%E6%9F%90%E4%BA%9B%E4%B8%8D%E9%9C%80%E8%A6%81%E6%88%96%E8%80%85%E6%98%AF%E9%87%8D%E5%A4%8D%E7%9A%84%E4%BE%9D%E8%B5%96%E3%80%82"><span class="toc-text">2）、使用 exclude 来排除三方库中某些不需要或者是重复的依赖。</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%BC%89%E3%80%81%E4%BD%BF%E7%94%A8-debugImplementation-%E6%9D%A5%E4%BE%9D%E8%B5%96%E4%BB%85%E5%9C%A8-debug-%E6%9C%9F%E9%97%B4%E6%89%8D%E4%BC%9A%E4%BD%BF%E7%94%A8%E7%9A%84%E5%BA%93%EF%BC%8C%E5%A6%82%E4%B8%80%E4%BA%9B%E7%BA%BF%E4%B8%8B%E7%9A%84%E6%80%A7%E8%83%BD%E6%A3%80%E6%B5%8B%E5%B7%A5%E5%85%B7%E3%80%82%E5%A6%82%E4%B8%8B%E6%98%AF%E4%B8%80%E4%B8%AA%E7%A4%BA%E4%BE%8B%E4%BB%A3%E7%A0%81%EF%BC%9A"><span class="toc-text">3）、使用 debugImplementation 来依赖仅在 debug 期间才会使用的库，如一些线下的性能检测工具。如下是一个示例代码：</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#8%E3%80%81%E5%88%A9%E7%94%A8%E5%85%AC%E5%8F%B8-Maven-%E4%BB%93%E5%BA%93%E7%9A%84%E6%9C%AC%E5%9C%B0%E7%BC%93%E5%AD%98"><span class="toc-text">8、利用公司 Maven 仓库的本地缓存</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#9%E3%80%81Debug-%E6%9E%84%E5%BB%BA%E6%97%B6%E8%AE%BE%E7%BD%AE-minSdkVersion-%E4%B8%BA-21"><span class="toc-text">9、Debug 构建时设置 minSdkVersion 为 21</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#10%E3%80%81%E9%85%8D%E7%BD%AE-gradle-properties"><span class="toc-text">10、配置 gradle.properties</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#11%E3%80%81%E9%85%8D%E7%BD%AE-DexOptions"><span class="toc-text">11、配置 DexOptions</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#12%E3%80%81%E4%BD%BF%E7%94%A8-walle-%E6%8F%90%E5%8D%87%E6%89%93%E5%A4%9A%E6%B8%A0%E9%81%93%E5%8C%85%E7%9A%84%E6%95%88%E7%8E%87"><span class="toc-text">12、使用 walle 提升打多渠道包的效率</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#13%E3%80%81%E8%AE%BE%E7%BD%AE%E5%BA%94%E7%94%A8%E6%94%AF%E6%8C%81%E7%9A%84%E8%AF%AD%E8%A8%80"><span class="toc-text">13、设置应用支持的语言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#14%E3%80%81%E4%BD%BF%E7%94%A8%E5%A2%9E%E9%87%8F%E7%BC%96%E8%AF%91"><span class="toc-text">14、使用增量编译</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#15%E3%80%81%E4%BD%BF%E7%94%A8%E5%BE%AA%E7%8E%AF%E8%BF%9B%E8%A1%8C%E4%BE%9D%E8%B5%96%E4%BC%98%E5%8C%96%EF%BC%88%F0%9F%94%A5%EF%BC%89"><span class="toc-text">15、使用循环进行依赖优化（🔥）</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81Gradle-%E6%9F%A5%E8%AF%A2%E5%91%BD%E4%BB%A4"><span class="toc-text">1、Gradle 查询命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E3%80%81%E6%9F%A5%E7%9C%8B%E4%B8%BB%E8%A6%81%E4%BB%BB%E5%8A%A1"><span class="toc-text">1）、查看主要任务</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89%E3%80%81%E6%9F%A5%E7%9C%8B%E6%89%80%E6%9C%89%E4%BB%BB%E5%8A%A1%EF%BC%8C%E5%8C%85%E6%8B%AC%E7%BC%93%E5%AD%98%E4%BB%BB%E5%8A%A1%E7%AD%89%E7%AD%89"><span class="toc-text">2）、查看所有任务，包括缓存任务等等</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81Gradle-%E6%89%A7%E8%A1%8C%E5%91%BD%E4%BB%A4"><span class="toc-text">2、Gradle 执行命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E3%80%81%E5%AF%B9%E6%9F%90%E4%B8%AAmodule-moduleName-%E7%9A%84%E6%9F%90%E4%B8%AA%E4%BB%BB%E5%8A%A1-TaskName-%E8%BF%90%E8%A1%8C"><span class="toc-text">1）、对某个module [moduleName]   的某个任务[TaskName] 运行</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#3%E3%80%81Gradle-%E5%BF%AB%E9%80%9F%E6%9E%84%E5%BB%BA%E5%91%BD%E4%BB%A4"><span class="toc-text">3、Gradle 快速构建命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E3%80%81%E6%9F%A5%E7%9C%8B%E6%9E%84%E5%BB%BA%E7%89%88%E6%9C%AC"><span class="toc-text">1）、查看构建版本</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89%E3%80%81%E6%B8%85%E9%99%A4-build-%E6%96%87%E4%BB%B6%E5%A4%B9"><span class="toc-text">2）、清除 build 文件夹</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%BC%89%E3%80%81%E6%A3%80%E6%9F%A5%E4%BE%9D%E8%B5%96%E5%B9%B6%E7%BC%96%E8%AF%91%E6%89%93%E5%8C%85"><span class="toc-text">3）、检查依赖并编译打包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%BC%89%E3%80%81%E7%BC%96%E8%AF%91%E5%B9%B6%E5%AE%89%E8%A3%85-debug-%E5%8C%85"><span class="toc-text">4）、编译并安装 debug 包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5%EF%BC%89%E3%80%81%E7%BC%96%E8%AF%91%E5%B9%B6%E6%89%93%E5%8D%B0%E6%97%A5%E5%BF%97"><span class="toc-text">5）、编译并打印日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6%EF%BC%89%E3%80%81%E7%BC%96%E8%AF%91%E5%B9%B6%E8%BE%93%E5%87%BA%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A%EF%BC%8C%E6%80%A7%E8%83%BD%E6%8A%A5%E5%91%8A%E4%B8%80%E8%88%AC%E5%9C%A8%E6%9E%84%E5%BB%BA%E5%B7%A5%E7%A8%8B%E6%A0%B9%E7%9B%AE%E5%BD%95-build-reports-profile-%E4%B8%8B"><span class="toc-text">6）、编译并输出性能报告，性能报告一般在构建工程根目录 build&#x2F;reports&#x2F;profile 下</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#7%EF%BC%89%E3%80%81%E8%B0%83%E8%AF%95%E6%A8%A1%E5%BC%8F%E6%9E%84%E5%BB%BA%E5%B9%B6%E6%89%93%E5%8D%B0%E5%A0%86%E6%A0%88%E6%97%A5%E5%BF%97"><span class="toc-text">7）、调试模式构建并打印堆栈日志</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#8%EF%BC%89%E3%80%81%E5%BC%BA%E5%88%B6%E6%9B%B4%E6%96%B0%E6%9C%80%E6%96%B0%E4%BE%9D%E8%B5%96%EF%BC%8C%E6%B8%85%E9%99%A4%E6%9E%84%E5%BB%BA%E5%90%8E%E5%86%8D%E6%9E%84%E5%BB%BA"><span class="toc-text">8）、强制更新最新依赖，清除构建后再构建</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#9%EF%BC%89%E3%80%81%E7%BC%96%E8%AF%91%E5%B9%B6%E6%89%93-Debug-%E5%8C%85"><span class="toc-text">9）、编译并打 Debug 包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#10%EF%BC%89%E3%80%81%E7%BC%96%E8%AF%91%E5%B9%B6%E6%89%93-Release-%E7%9A%84%E5%8C%85"><span class="toc-text">10）、编译并打 Release 的包</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#4%E3%80%81Gradle-%E6%9E%84%E5%BB%BA%E5%B9%B6%E5%AE%89%E8%A3%85%E5%91%BD%E4%BB%A4"><span class="toc-text">4、Gradle 构建并安装命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E3%80%81Release-%E6%A8%A1%E5%BC%8F%E6%89%93%E5%8C%85%E5%B9%B6%E5%AE%89%E8%A3%85"><span class="toc-text">1）、Release 模式打包并安装</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89%E3%80%81%E5%8D%B8%E8%BD%BD-Release-%E6%A8%A1%E5%BC%8F%E5%8C%85"><span class="toc-text">2）、卸载 Release 模式包</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%BC%89%E3%80%81debug-release-%E6%A8%A1%E5%BC%8F%E5%85%A8%E9%83%A8%E6%B8%A0%E9%81%93%E6%89%93%E5%8C%85"><span class="toc-text">3）、debug release 模式全部渠道打包</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#5%E3%80%81Gradle-%E6%9F%A5%E7%9C%8B%E5%8C%85%E4%BE%9D%E8%B5%96%E5%91%BD%E4%BB%A4"><span class="toc-text">5、Gradle 查看包依赖命令</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E3%80%81%E6%9F%A5%E7%9C%8B%E9%A1%B9%E7%9B%AE%E6%A0%B9%E7%9B%AE%E5%BD%95%E4%B8%8B%E7%9A%84%E4%BE%9D%E8%B5%96"><span class="toc-text">1）、查看项目根目录下的依赖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89%E3%80%81%E6%9F%A5%E7%9C%8B-app-%E6%A8%A1%E5%9D%97%E4%B8%8B%E7%9A%84%E4%BE%9D%E8%B5%96"><span class="toc-text">2）、查看 app 模块下的依赖</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%BC%89%E3%80%81%E6%9F%A5%E7%9C%8B-app-%E6%A8%A1%E5%9D%97%E4%B8%8B%E5%8C%85%E5%90%AB-implementation-%E5%85%B3%E9%94%AE%E5%AD%97%E7%9A%84%E4%BE%9D%E8%B5%96%E9%A1%B9%E7%9B%AE"><span class="toc-text">3）、查看 app 模块下包含 implementation 关键字的依赖项目</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#1%E3%80%81Profile-report"><span class="toc-text">1、Profile report</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#1%EF%BC%89%E3%80%81Summary"><span class="toc-text">1）、Summary</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2%EF%BC%89%E3%80%81Configuaration"><span class="toc-text">2）、Configuaration</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#3%EF%BC%89%E3%80%81Dependency-Resolution"><span class="toc-text">3）、Dependency Resolution</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4%EF%BC%89%E3%80%81Task-Execution"><span class="toc-text">4）、Task Execution</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#2%E3%80%81Build-Scan"><span class="toc-text">2、Build Scan</span></a></li></ol></div></div></div>
+
+
+</div>
+<footer class="footer dis-select"><div class="social-wrap"><a class="social" title="GitHub" href="https://github.com/liwentuo" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/08a41b181ce68.svg"/></a><a class="social" title="Unsplash" href="https://unsplash.com/@angledaivd" target="_blank" rel="external nofollow noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/3616429.svg"/></a><a class="social" title="Comments" href="/about/#comments" rel="noopener noreferrer"><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://cdn.jsdelivr.net/gh/cdn-x/placeholder@1.0.3/social/942ebbf1a4b91.svg"/></a></div></footer>
+
+    </aside>
+    <div class='l_main'>
+      
+
+      
+
+
+<div class="bread-nav fs12"><div id="breadcrumb"><a class="cap breadcrumb" href="/">Mark</a><span class="sep"></span><a class="cap breadcrumb" href="/">文章</a><span class="sep"></span><a class="cap breadcrumb-link" href="/blog/categories/gradle/">Gradle</a></div><div id="post-meta">发布于&nbsp;<time datetime="2021-08-23T16:00:00.000Z">2021年8月24日</time></div></div>
+
+<article class='content md post'>
+<h1 class="article-title"><span>重拾Gradle</span></h1>
+<p><strong>工程构建工具从古老的 mk、make、cmake、qmake, 再到成熟的 ant、maven、ivy，最后到如今互联网时代的 sbt、gradle，经历了长久的历史演化与变迁</strong>。</p>
+<p>Gradle 作为一款新生代的构建工具无疑是有它自身的巨大优势的，<strong>因此，掌握好 Gradle 构建工具的各种使用姿势与使用场景其重要性不言而喻</strong>。</p>
+<p>此外，<strong>Gradle</strong> 已经成为 <strong>高级 Android 知识体系</strong> 必不可少的一部分。因此，掌握 Gradle，提升自身 <strong>自动化构建技术的深度</strong>， 能让我们更加地 <strong>如虎添翼</strong>。</p>
+<h2 id="1、Gradle-是什么？"><a href="#1、Gradle-是什么？" class="headerlink" title="1、Gradle 是什么？"></a>1、Gradle 是什么？</h2><ul>
+<li>1)、它是一款强大的构建工具，而不是语⾔。</li>
+<li>2)、它使用了 Groovy 这个语言，创造了一种 DSL，但它本身不是语⾔。</li>
+</ul>
+<h2 id="2、为什么使用-Gradle"><a href="#2、为什么使用-Gradle" class="headerlink" title="2、为什么使用 Gradle?"></a>2、为什么使用 Gradle?</h2><p>主要基于如下 三点 原因：</p>
+<ul>
+<li>1）、它是一款最新的，功能最强大的构建工具，使用它我们能做很多事情。</li>
+<li>2）、使用程序替代传统的 XML 配置，使得项目构建更加灵活。</li>
+<li>3）、丰富的第三方插件，可以让我们随心所欲地使用。</li>
+</ul>
+<h2 id="3、Gradle-的构建流程"><a href="#3、Gradle-的构建流程" class="headerlink" title="3、Gradle 的构建流程"></a>3、Gradle 的构建流程</h2><p>通常来说，Gradle 一次完整的构建过程通常分成如下 三个部分：</p>
+<ul>
+<li>初始化阶段：首先，在初始化阶段 Gradle 会决定哪些项目模块要参与构建，并且为每个项目模块创建一个与之对应的 Project 实例。</li>
+<li>配置阶段：然后，配置工程中每个项目的模块，并执行包含其中的配置脚本。</li>
+<li>任务执行：最后，执行每个参与构建过程的 Gradle task。</li>
+</ul>
+<h1 id="二、打包提速"><a href="#二、打包提速" class="headerlink" title="二、打包提速"></a>二、打包提速</h1><p>掌握 Gradle 构建提速的技巧能够帮助我们节省大量的编译构建时间，并且，依赖模块越多且越大的项目节省出来的时间越多，因此是一件投入产出比相当大的事情。</p>
+<h2 id="1、升级最新的-Gradle-版本"><a href="#1、升级最新的-Gradle-版本" class="headerlink" title="1、升级最新的 Gradle 版本"></a>1、升级最新的 Gradle 版本</h2><p>将 Gradle 和 Android Gradle Plugin 的版本升至最新，所带来的的构建速度的提升效果是显而易见的，特别是当之前你所使用的版本很低的时候。</p>
+<h2 id="2、开启离线模式"><a href="#2、开启离线模式" class="headerlink" title="2、开启离线模式"></a>2、开启离线模式</h2><p>打开 Android Studio 的离线模式后，所有的编译操作都会走本地缓存，毫无疑问，这将会极大地缩短编译时间。</p>
+<h2 id="3、配置-AS-的最大堆内存"><a href="#3、配置-AS-的最大堆内存" class="headerlink" title="3、配置 AS 的最大堆内存"></a>3、配置 AS 的最大堆内存</h2><p><strong>在默认情况下， AS 的最大堆内存为 1960MB，我们可以选择 Help =&gt; Edit Custom VM Options，此时，会打开一个 studio.vmoptions 文件，我们将第二行的 -Xmx1960m 改为 -Xmx3g 即可将可用内存提升到 3GB</strong>。</p>
+<h2 id="4、删除不必要的-Moudle-或合并部分-Module"><a href="#4、删除不必要的-Moudle-或合并部分-Module" class="headerlink" title="4、删除不必要的 Moudle 或合并部分 Module"></a>4、删除不必要的 Moudle 或合并部分 Module</h2><p>过多的 Moudle 会使项目中 Module 的依赖关系变得复杂，Gradle 在编译构建的时候会去检测各个 Module 之间的依赖关系，然后，它会花费大量的构建时间帮我们梳理这些 Module 之间的依赖关系，以避免 Module 之间相互引用而带来的各种问题。<strong>除了删除不必要的 Moudle 或合并部分 Module 的方式外，我们也可以将稳定的底层 Module 打包成 aar，上传到公司的本地 Maven 仓库，通过远程方式依赖</strong>。</p>
+<h2 id="5、删除Module中的无用文件"><a href="#5、删除Module中的无用文件" class="headerlink" title="5、删除Module中的无用文件"></a>5、删除Module中的无用文件</h2><ul>
+<li>1）、如果我们不需要写单元测试代码，可以直接删除 test 目录。</li>
+<li>2）、如果我们不需要写 UI 测试代码，也可以直接删除 androidTest 目录。</li>
+<li>3）、此外，如果 Moudle 中只有纯代码，可以直接删除 res 目录。</li>
+</ul>
+<h2 id="6、去除项目中的无用资源"><a href="#6、去除项目中的无用资源" class="headerlink" title="6、去除项目中的无用资源"></a>6、去除项目中的无用资源</h2><p>在 Android Studio 中提供了供了自动检测失效文件和删除的功能，即 <strong>Remove Unused Resource</strong> 功能，操作路径如下所示：</p>
+<blockquote>
+<p>右键 =&gt; 选中 Refactor =&gt; 选中Remove Unused Resource =&gt; 直接点击REFACTOR</p>
+</blockquote>
+<p><strong>需要注意的是，这里不需要将 Delete unused @id declarations too 选中，如果你使用了 databinding 的话，可能会编译失败</strong>。</p>
+<h2 id="7、优化第三方库的使用"><a href="#7、优化第三方库的使用" class="headerlink" title="7、优化第三方库的使用"></a>7、优化第三方库的使用</h2><p>一般的优化步骤有如下 三步：</p>
+<h3 id="1）、使用更小的库去替换现有的同类型的三方库。"><a href="#1）、使用更小的库去替换现有的同类型的三方库。" class="headerlink" title="1）、使用更小的库去替换现有的同类型的三方库。"></a>1）、使用更小的库去替换现有的同类型的三方库。</h3><h3 id="2）、使用-exclude-来排除三方库中某些不需要或者是重复的依赖。"><a href="#2）、使用-exclude-来排除三方库中某些不需要或者是重复的依赖。" class="headerlink" title="2）、使用 exclude 来排除三方库中某些不需要或者是重复的依赖。"></a>2）、使用 exclude 来排除三方库中某些不需要或者是重复的依赖。</h3><p>例如，我在 <a href="https://link.juejin.cn/?target=https://github.com/JsonChao/Awesome-WanAndroid">Awesome-WanAndroid</a> 项目中就使用到了这种技巧，在依赖 LeakCanary 时，发现它包含有 support 包，因此，我们可以使用 exclude 将它排除掉，代码如下所示：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">   debugImplementation (rootProject.ext.dependencies[<span class="string">&quot;leakcanary-android&quot;</span>]) &#123;</span><br><span class="line">       exclude group: <span class="string">&#x27;com.android.support&#x27;</span></span><br><span class="line">   &#125;</span><br><span class="line">   releaseImplementation (rootProject.ext.dependencies[<span class="string">&quot;leakcanary-android-no-op&quot;</span>]) &#123;</span><br><span class="line">       exclude group: <span class="string">&#x27;com.android.support&#x27;</span></span><br><span class="line">   &#125;</span><br><span class="line">   testImplementation (rootProject.ext.dependencies[<span class="string">&quot;leakcanary-android-no-op&quot;</span>]) &#123;</span><br><span class="line">       exclude group: <span class="string">&#x27;com.android.support&#x27;</span></span><br><span class="line">   &#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="3）、使用-debugImplementation-来依赖仅在-debug-期间才会使用的库，如一些线下的性能检测工具。如下是一个示例代码："><a href="#3）、使用-debugImplementation-来依赖仅在-debug-期间才会使用的库，如一些线下的性能检测工具。如下是一个示例代码：" class="headerlink" title="3）、使用 debugImplementation 来依赖仅在 debug 期间才会使用的库，如一些线下的性能检测工具。如下是一个示例代码："></a>3）、使用 debugImplementation 来依赖仅在 debug 期间才会使用的库，如一些线下的性能检测工具。如下是一个示例代码：</h3><figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="comment">// 仅在debug包启用BlockCanary进行卡顿监控和提示的话，可以这么用</span></span><br><span class="line">debugImplementation <span class="string">&#x27;com.github.markzhai:blockcanary-android:1.5.0&#x27;</span></span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="8、利用公司-Maven-仓库的本地缓存"><a href="#8、利用公司-Maven-仓库的本地缓存" class="headerlink" title="8、利用公司 Maven 仓库的本地缓存"></a>8、利用公司 Maven 仓库的本地缓存</h2><p>当第一个开发引入了新库或者更新版本之后，公司的 Maven 仓库中就会缓存对应的库版本，通过这样的方式，其他开发同事就能够在项目构建时直接从公司的 Maven 仓库中拿到缓存。</p>
+<h2 id="9、Debug-构建时设置-minSdkVersion-为-21"><a href="#9、Debug-构建时设置-minSdkVersion-为-21" class="headerlink" title="9、Debug 构建时设置 minSdkVersion 为 21"></a>9、Debug 构建时设置 minSdkVersion 为 21</h2><p>这样，我们就可以避免因使用 MutliDex 而拖慢 build 速度。在主 Moudle 中的 build.gradle 中加入如下代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    productFlavors &#123;</span><br><span class="line">        speed &#123;</span><br><span class="line">            minSdkVersion <span class="number">21</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>同步项目之后，我们在Android Studio右侧的 Build Variants 中选中 speedDebug 选项即可，如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/05bf4781812d4ab29c34bf9225f57f1b~tplv-k3u1fbpfcp-watermark.awebp" alt="img"></p>
+<p>需要注意的是，要注意我们当前项目的实际最低版本，比如它为 18，现在我们开启了 speedDebug，项目编写时就会以 21 为标准，此时，就 <strong>需要注意 18 ~ 21 之间的 API</strong>，例如我在布局中使用了 21 版本新出的 Material Design 的控件，此时就是没问题的，但实际我们需要对 21 版本以下的对应布局做相应的适配。</p>
+<p>此外，我们也可以定义不同的 productFlavors，并且在 src 目录下新建对应的 flavor 名称标识的目录资源文件，以此实现在不同的渠道 APK 中采用不同的资源文件。</p>
+<h2 id="10、配置-gradle-properties"><a href="#10、配置-gradle-properties" class="headerlink" title="10、配置 gradle.properties"></a>10、配置 gradle.properties</h2><p>通用的配置项如下所示：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    <span class="comment">// 构建初始化需要执行许多任务，例如java虚拟机的启动，加载虚拟机环境，加载class文件等等，配置此项可以开启线程守护，并且仅仅第一次编译时会开启线程（Gradle 3.0版本以后默认支持）</span></span><br><span class="line">    org.gradle.daemon=<span class="keyword">true</span>  </span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 配置编译时的虚拟机大小</span></span><br><span class="line">    org.gradle.jvmargs=-Xmx2048m -XX:MaxPermSize=512m -XX:+HeapDumpOnOutOfMemoryError -Dfile.encoding=UTF-<span class="number">8</span>  </span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 开启并行编译，相当使用了多线程，仅仅适用于模块化项目（存在多个 Library 库工程依赖主工程）</span></span><br><span class="line">    org.gradle.parallel=<span class="keyword">true</span>  </span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 最大的优势在于帮助多 Moudle 的工程提速，在编译多个 Module 相互依赖的项目时，Gradle 会按需选择进行编译，即仅仅编译相关的 Module</span></span><br><span class="line">    org.gradle.configureondemand=<span class="keyword">true</span>   </span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 开启构建缓存，Gradle 3.5新的缓存机制，可以缓存所有任务的输出，</span></span><br><span class="line">    <span class="comment">// 不同于buildCache仅仅缓存dex的外部libs，它可以复用</span></span><br><span class="line">    <span class="comment">// 任何时候的构建缓存，设置包括其它分支的构建缓存</span></span><br><span class="line">    org.gradle.caching=<span class="keyword">true</span></span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>这里效果比较好一点的配置项就是 <strong>配置编译时的虚拟机大小</strong> 这项，我们来详细分析下其中参数的含义，如下所示：</p>
+<ul>
+<li>-Xmx2048m：指定 JVM 最大允许分配的堆内存为 2048MB，它会采用按需分配的方式。</li>
+<li>-XX:MaxPermSize=512m：指定 JVM 最大允许分配的非堆内存为 512MB，同上堆内存一样也是按需分配的。</li>
+</ul>
+<h2 id="11、配置-DexOptions"><a href="#11、配置-DexOptions" class="headerlink" title="11、配置 DexOptions"></a>11、配置 DexOptions</h2><p>我们可以将 dexOptions 配置项中的 maxProcessCount 设定为 8，这样编译时并行的最大进程数数目就可以提升到 8 个。</p>
+<h2 id="12、使用-walle-提升打多渠道包的效率"><a href="#12、使用-walle-提升打多渠道包的效率" class="headerlink" title="12、使用 walle 提升打多渠道包的效率"></a>12、使用 walle 提升打多渠道包的效率</h2><p>walle 是 Android Signature V2 Scheme 签名下的新一代渠道包打包神器，它在 Apk 中的 APK Signature Block 区块添加了自定义的渠道信息以生成渠道包，因而提高了渠道包的生成效率。此外，它也可以作为单机工具来使用，也可以部署在 HTTP 服务器上来实时处理渠道包 Apk 的升级网络请求，有需要的同学可以参考美团的 <a href="https://link.juejin.cn/?target=https://github.com/Meituan-Dianping/walle">walle</a>。</p>
+<h2 id="13、设置应用支持的语言"><a href="#13、设置应用支持的语言" class="headerlink" title="13、设置应用支持的语言"></a>13、设置应用支持的语言</h2><p>如果应用没有做国际化，我们可以让应用仅仅支持 <strong>中文的资源配置</strong>，即将 resConfigs 设置为 “zh”。如下所示：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">    android &#123;</span><br><span class="line">        defaultConfig &#123;</span><br><span class="line">            resConfigs <span class="string">&quot;zh&quot;</span></span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="14、使用增量编译"><a href="#14、使用增量编译" class="headerlink" title="14、使用增量编译"></a>14、使用增量编译</h2><p>Gradle 的构建方式通常来说细分为以下 三种：</p>
+<ul>
+<li>1）、Full Build：全量构建，即从0开始构建。</li>
+<li>2）、Incremental build java change：增量构建Java改变，修改源代码后的构建，且之前构建过。</li>
+<li>3）、Incremental build resource change：修改资源文件后的构建，且之前构建过。</li>
+</ul>
+<p>在 Gradle 4.10 版本之后便默认使用了增量编译，它会测试自上次构建以来是否已更改任何 gradle task 任务输入或输出。如果还没有，Gradle 会将该任务认为是最新的，因此跳过执行其动作。由于 Gradle 可以将项目的依赖关系分析精确到类级别，因此，此时仅会重新编译受影响的类。如果在更老的版本需要启动增量编译，可以使用如下配置：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">    tasks.withType(JavaCompile) &#123;</span><br><span class="line">        options.incremental = <span class="literal">true</span></span><br><span class="line">    &#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="15、使用循环进行依赖优化（🔥）"><a href="#15、使用循环进行依赖优化（🔥）" class="headerlink" title="15、使用循环进行依赖优化（🔥）"></a>15、使用循环进行依赖优化（🔥）</h2><p>在 Awesome-WanAndroid 项目的 app moudle 的 build.gradle 中，有将近几百行的依赖代码，如下所示：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">    dependencies &#123;</span><br><span class="line">        implementation fileTree(<span class="attr">include:</span> [<span class="string">&#x27;*.jar&#x27;</span>], <span class="attr">dir:</span> <span class="string">&#x27;libs&#x27;</span>)</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 启动器</span></span><br><span class="line">        api files(<span class="string">&#x27;libs/launchstarter-release-1.0.0.aar&#x27;</span>)</span><br><span class="line">        </span><br><span class="line">         <span class="comment">//base</span></span><br><span class="line">        implementation rootProject.ext.dependencies[<span class="string">&quot;appcompat-v7&quot;</span>]</span><br><span class="line">        implementation rootProject.ext.dependencies[<span class="string">&quot;cardview-v7&quot;</span>]</span><br><span class="line">        implementation rootProject.ext.dependencies[<span class="string">&quot;design&quot;</span>]</span><br><span class="line">        implementation rootProject.ext.dependencies[<span class="string">&quot;constraint-layout&quot;</span>]</span><br><span class="line">        </span><br><span class="line">        annotationProcessor rootProject.ext.dependencies[<span class="string">&quot;glide_compiler&quot;</span>]</span><br><span class="line">        </span><br><span class="line">         <span class="comment">//canary</span></span><br><span class="line">        debugImplementation (rootProject.ext.dependencies[<span class="string">&quot;leakcanary-android&quot;</span>]) &#123;</span><br><span class="line">            exclude <span class="attr">group:</span> <span class="string">&#x27;com.android.support&#x27;</span></span><br><span class="line">        &#125;</span><br><span class="line">        releaseImplementation (rootProject.ext.dependencies[<span class="string">&quot;leakcanary-android-no-op&quot;</span>]) &#123;</span><br><span class="line">            exclude <span class="attr">group:</span> <span class="string">&#x27;com.android.support&#x27;</span></span><br><span class="line">        &#125;</span><br><span class="line">        testImplementation (rootProject.ext.dependencies[<span class="string">&quot;leakcanary-android-no-op&quot;</span>]) &#123;</span><br><span class="line">            exclude <span class="attr">group:</span> <span class="string">&#x27;com.android.support&#x27;</span></span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        ...</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>有没有一种好的方式不在 build.gradle 中写这么多的依赖配置？</p>
+<p>有，就是 <strong>使用循环遍历依赖</strong>。答案似乎很简单，但是要想处理在依赖时遇到的所有情况，并不简单。下面，我直接给出相应的适配代码，大家可以直接使用。</p>
+<p>首先，在 app 下的 build.gradle 的依赖配置如下所示：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">    <span class="comment">// 处理所有的 aar 依赖</span></span><br><span class="line">    apiFileDependencies.each &#123; k, v -&gt; api files(v)&#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 处理所有的 xxximplementation 依赖</span></span><br><span class="line">    implementationDependencies.each &#123; k, v -&gt; implementation v &#125;</span><br><span class="line">    debugImplementationDependencies.each &#123; k, v -&gt; debugImplementation v &#125;</span><br><span class="line">    releaseImplementationDependencies.each &#123; k, v -&gt; releaseImplementation v &#125;</span><br><span class="line">    androidTestImplementationDependencies.each &#123; k, v -&gt; androidTestImplementation v &#125;</span><br><span class="line">    testImplementationDependencies.each &#123; k, v -&gt; testImplementation v &#125;</span><br><span class="line">    debugApiDependencies.each &#123; k, v -&gt; debugApi v &#125;</span><br><span class="line">    releaseApiDependencies.each &#123; k, v -&gt; releaseApi v &#125;</span><br><span class="line">    compileOnlyDependencies.each &#123; k, v -&gt; compileOnly v &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 处理 annotationProcessor 依赖</span></span><br><span class="line">    processors.each &#123; k, v -&gt; annotationProcessor v &#125;</span><br><span class="line">    </span><br><span class="line">    <span class="comment">// 处理所有包含 exclude 的依赖</span></span><br><span class="line">    implementationExcludes.each &#123; entry -&gt;</span><br><span class="line">        implementation(entry.key) &#123;</span><br><span class="line">            entry.value.each &#123; childEntry -&gt;</span><br><span class="line">                exclude(<span class="attr">group:</span> childEntry)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    debugImplementationExcludes.each &#123; entry -&gt;</span><br><span class="line">        debugImplementation(entry.key) &#123;</span><br><span class="line">            entry.value.each &#123; childEntry -&gt;</span><br><span class="line">                exclude(<span class="attr">group:</span> childEntry.key, <span class="attr">module:</span> childEntry.value)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    releaseImplementationExcludes.each &#123; entry -&gt;</span><br><span class="line">        releaseImplementation(entry.key) &#123;</span><br><span class="line">            entry.value.each &#123; childEntry -&gt;</span><br><span class="line">                exclude(<span class="attr">group:</span> childEntry.key, <span class="attr">module:</span> childEntry.value)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    testImplementationExclude.each &#123; entry -&gt;</span><br><span class="line">        testImplementation(entry.key) &#123;</span><br><span class="line">            entry.value.each &#123; childEntry -&gt;</span><br><span class="line">                exclude(<span class="attr">group:</span> childEntry.key, <span class="attr">module:</span> childEntry.value)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    androidTestImplementationExcludes.each &#123; entry -&gt;</span><br><span class="line">        androidTestImplementation(entry.key) &#123;</span><br><span class="line">            entry.value.each &#123; childEntry -&gt;</span><br><span class="line">                exclude(<span class="attr">group:</span> childEntry.key, <span class="attr">module:</span> childEntry.value)</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>然后，在 config.gradle 全局依赖管理文件中配置好对应名称的依赖数组即可。代码如下所示：</p>
+<figure class="highlight groovy"><table><tr><td class="code"><pre><span class="line">    dependencies = [</span><br><span class="line">            <span class="comment">// base</span></span><br><span class="line">            <span class="string">&quot;appcompat-v7&quot;</span>                      : <span class="string">&quot;com.android.support:appcompat-v7:$&#123;version[&quot;</span>supportLibraryVersion<span class="string">&quot;]&#125;&quot;</span>，</span><br><span class="line">            ...</span><br><span class="line">    ]</span><br><span class="line">    </span><br><span class="line">    annotationProcessor = [</span><br><span class="line">            <span class="string">&quot;glide_compiler&quot;</span>                    : <span class="string">&quot;com.github.bumptech.glide:compiler:$&#123;version[&quot;</span>glideVersion<span class="string">&quot;]&#125;&quot;</span>,</span><br><span class="line">            ...</span><br><span class="line">    ]</span><br><span class="line">    </span><br><span class="line">    apiFileDependencies = [</span><br><span class="line">            <span class="string">&quot;launchstarter&quot;</span>                                   :<span class="string">&quot;libs/launchstarter-release-1.0.0.aar&quot;</span></span><br><span class="line">    ]</span><br><span class="line">    </span><br><span class="line">    debugImplementationDependencies = [</span><br><span class="line">            <span class="string">&quot;MethodTraceMan&quot;</span>                                  : <span class="string">&quot;com.github.zhengcx:MethodTraceMan:1.0.7&quot;</span></span><br><span class="line">    ]</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">    </span><br><span class="line">    implementationExcludes = [</span><br><span class="line">            <span class="string">&quot;com.android.support.test.espresso:espresso-idling-resource:3.0.2&quot;</span> : [</span><br><span class="line">                    <span class="string">&#x27;com.android.support&#x27;</span> : <span class="string">&#x27;support-annotations&#x27;</span></span><br><span class="line">            ]</span><br><span class="line">    ]</span><br><span class="line">    </span><br><span class="line">    ...</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>具体的代码示例可以在 Awesome-WanAndroid 的 <a href="https://link.juejin.cn/?target=https://github.com/JsonChao/Awesome-WanAndroid/blob/master/app/build.gradle">build.gradle</a> 和 <a href="https://link.juejin.cn/?target=https://github.com/JsonChao/Awesome-WanAndroid/blob/master/config.gradle">config.gradle</a> 上进行查看。</p>
+<h1 id="三、Gradle-常用命令"><a href="#三、Gradle-常用命令" class="headerlink" title="三、Gradle 常用命令"></a>三、Gradle 常用命令</h1><h2 id="1、Gradle-查询命令"><a href="#1、Gradle-查询命令" class="headerlink" title="1、Gradle 查询命令"></a>1、Gradle 查询命令</h2><h3 id="1）、查看主要任务"><a href="#1）、查看主要任务" class="headerlink" title="1）、查看主要任务"></a>1）、查看主要任务</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew tasks</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="2）、查看所有任务，包括缓存任务等等"><a href="#2）、查看所有任务，包括缓存任务等等" class="headerlink" title="2）、查看所有任务，包括缓存任务等等"></a>2）、查看所有任务，包括缓存任务等等</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew tasks --all</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="2、Gradle-执行命令"><a href="#2、Gradle-执行命令" class="headerlink" title="2、Gradle 执行命令"></a>2、Gradle 执行命令</h2><h3 id="1）、对某个module-moduleName-的某个任务-TaskName-运行"><a href="#1）、对某个module-moduleName-的某个任务-TaskName-运行" class="headerlink" title="1）、对某个module [moduleName]   的某个任务[TaskName] 运行"></a>1）、对某个module [moduleName]   的某个任务[TaskName] 运行</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew :moduleName:taskName</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="3、Gradle-快速构建命令"><a href="#3、Gradle-快速构建命令" class="headerlink" title="3、Gradle 快速构建命令"></a>3、Gradle 快速构建命令</h2><p>Gradle 提供了一系列的快速构建命令来替代 IDE 的可视化构建操作，如我们最常用的 clean、build 等等。需要注意的是，build 命令会把 debug、release 环境的包都构建出来。</p>
+<h3 id="1）、查看构建版本"><a href="#1）、查看构建版本" class="headerlink" title="1）、查看构建版本"></a>1）、查看构建版本</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew -v</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="2）、清除-build-文件夹"><a href="#2）、清除-build-文件夹" class="headerlink" title="2）、清除 build 文件夹"></a>2）、清除 build 文件夹</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew clean</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="3）、检查依赖并编译打包"><a href="#3）、检查依赖并编译打包" class="headerlink" title="3）、检查依赖并编译打包"></a>3）、检查依赖并编译打包</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew build</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="4）、编译并安装-debug-包"><a href="#4）、编译并安装-debug-包" class="headerlink" title="4）、编译并安装 debug 包"></a>4）、编译并安装 debug 包</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew installDebug</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="5）、编译并打印日志"><a href="#5）、编译并打印日志" class="headerlink" title="5）、编译并打印日志"></a>5）、编译并打印日志</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew build --info</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="6）、编译并输出性能报告，性能报告一般在构建工程根目录-build-reports-profile-下"><a href="#6）、编译并输出性能报告，性能报告一般在构建工程根目录-build-reports-profile-下" class="headerlink" title="6）、编译并输出性能报告，性能报告一般在构建工程根目录 build/reports/profile 下"></a>6）、编译并输出性能报告，性能报告一般在构建工程根目录 build/reports/profile 下</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew build --profile</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="7）、调试模式构建并打印堆栈日志"><a href="#7）、调试模式构建并打印堆栈日志" class="headerlink" title="7）、调试模式构建并打印堆栈日志"></a>7）、调试模式构建并打印堆栈日志</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew build --info --debug --stacktrace</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="8）、强制更新最新依赖，清除构建后再构建"><a href="#8）、强制更新最新依赖，清除构建后再构建" class="headerlink" title="8）、强制更新最新依赖，清除构建后再构建"></a>8）、强制更新最新依赖，清除构建后再构建</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew clean build --refresh-<span class="keyword">dependencies</span></span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="9）、编译并打-Debug-包"><a href="#9）、编译并打-Debug-包" class="headerlink" title="9）、编译并打 Debug 包"></a>9）、编译并打 Debug 包</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew assembleDebug</span><br><span class="line">    # 简化版命令，取各个单词的首字母</span><br><span class="line">    ./gradlew aD</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="10）、编译并打-Release-的包"><a href="#10）、编译并打-Release-的包" class="headerlink" title="10）、编译并打 Release 的包"></a>10）、编译并打 Release 的包</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew assembleRelease</span><br><span class="line">    # 简化版命令，取各个单词的首字母</span><br><span class="line">    ./gradlew aR</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="4、Gradle-构建并安装命令"><a href="#4、Gradle-构建并安装命令" class="headerlink" title="4、Gradle 构建并安装命令"></a>4、Gradle 构建并安装命令</h2><h3 id="1）、Release-模式打包并安装"><a href="#1）、Release-模式打包并安装" class="headerlink" title="1）、Release 模式打包并安装"></a>1）、Release 模式打包并安装</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew installRelease</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="2）、卸载-Release-模式包"><a href="#2）、卸载-Release-模式包" class="headerlink" title="2）、卸载 Release 模式包"></a>2）、卸载 Release 模式包</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew uninstallRelease</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="3）、debug-release-模式全部渠道打包"><a href="#3）、debug-release-模式全部渠道打包" class="headerlink" title="3）、debug release 模式全部渠道打包"></a>3）、debug release 模式全部渠道打包</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew assemble</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h2 id="5、Gradle-查看包依赖命令"><a href="#5、Gradle-查看包依赖命令" class="headerlink" title="5、Gradle 查看包依赖命令"></a>5、Gradle 查看包依赖命令</h2><h3 id="1）、查看项目根目录下的依赖"><a href="#1）、查看项目根目录下的依赖" class="headerlink" title="1）、查看项目根目录下的依赖"></a>1）、查看项目根目录下的依赖</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew <span class="keyword">dependencies</span></span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="2）、查看-app-模块下的依赖"><a href="#2）、查看-app-模块下的依赖" class="headerlink" title="2）、查看 app 模块下的依赖"></a>2）、查看 app 模块下的依赖</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew app:<span class="keyword">dependencies</span></span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h3 id="3）、查看-app-模块下包含-implementation-关键字的依赖项目"><a href="#3）、查看-app-模块下包含-implementation-关键字的依赖项目" class="headerlink" title="3）、查看 app 模块下包含 implementation 关键字的依赖项目"></a>3）、查看 app 模块下包含 implementation 关键字的依赖项目</h3><figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew app:<span class="keyword">dependencies</span> --configuration implementation</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<h1 id="四、使用-Build-Scan-诊断应用的构建过程"><a href="#四、使用-Build-Scan-诊断应用的构建过程" class="headerlink" title="四、使用 Build Scan 诊断应用的构建过程"></a>四、使用 Build Scan 诊断应用的构建过程</h1><p>在了解 Build Scan 之前，我们需要先来一起学习下旧时代的 Gradle build 诊断工具 Profile report。</p>
+<h2 id="1、Profile-report"><a href="#1、Profile-report" class="headerlink" title="1、Profile report"></a>1、Profile report</h2><p>通常情况下，我们一般会使用如下命令来生成一份本地的构建分析报告：</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew assembleDebug --profile</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>这里，我们在 <a href="https://link.juejin.cn/?target=https://github.com/JsonChao/Awesome-WanAndroid">Awesome-WanAndroid</a> App的根目录下运行这个命令，可以得到四块视图。下面，我们来了解下。</p>
+<h3 id="1）、Summary"><a href="#1）、Summary" class="headerlink" title="1）、Summary"></a>1）、Summary</h3><p><strong>Gradle 构建信息的概览界面</strong>，用于 <strong>查看 Total Build Time、初始化（包含 Startup、Settings and BuildSrc、Loading Projects 三部分）、配置、任务执行的时间</strong>。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/78c035e5d3fb4040b7b0959bb5ba235b~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<h3 id="2）、Configuaration"><a href="#2）、Configuaration" class="headerlink" title="2）、Configuaration"></a>2）、Configuaration</h3><p><strong>Gradle 配置各个工程所花费的时间</strong>，我们可以看到 <strong>All projects、app 模块以及其它模块单个的配置时间</strong>。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a1534456dbf54ceab861a10a4a1e8ecc~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<h3 id="3）、Dependency-Resolution"><a href="#3）、Dependency-Resolution" class="headerlink" title="3）、Dependency Resolution"></a>3）、Dependency Resolution</h3><p><strong>Gradle 在对各个 task 进行依赖关系解析时所花费的时间</strong>。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/f1b5a1c9e2c64a3da60b79b6d9a1e6a4~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<h3 id="4）、Task-Execution"><a href="#4）、Task-Execution" class="headerlink" title="4）、Task Execution"></a>4）、Task Execution</h3><p><strong>Gradle 在执行各个 Gradle task 所花费的时间</strong>。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/bf923fff065c4e5c99693e9a2e311280~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>需要注意的是，Task Execution 的时间是所有 gradle task 执行时间的总和，实际上 <strong>多模块的任务是并行执行的</strong>。</p>
+<h2 id="2、Build-Scan"><a href="#2、Build-Scan" class="headerlink" title="2、Build Scan"></a>2、Build Scan</h2><p><strong>Build Scan 是官方推出的用于诊断应用构建过程的性能检测工具，它能分析出导致应用构建速度慢的一些问题</strong>。在项目下使用如下命令即可开启 Build Scan 诊断：</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    ./gradlew build --scan </span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>如果你使用的是 Mac，使用上述命令时出现</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    zsh: permission denied: ./gradlew</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>可以加入下面的命给 gradlew 分配执行权限：</p>
+<figure class="highlight gradle"><table><tr><td class="code"><pre><span class="line">    chmod +x gradlew</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>执行完 build –scan 命令之后，在命令的最后我们可以看到如下信息：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/06cfe85b86e14948a3fb7a9119cdaec7~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>可以看到，在 Publishing build scan 点击下面的链接就可以跳转到 Build Scan 的诊断页面。</p>
+<p>需要注意的是，如果你是第一次使用 Build Scan，首先需要使用自己的邮箱激活 Build Scan。如下图界面所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/2a018f50e2724dea872463ff07c617d5~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>这里，我输入了我的邮箱 <a href="https://link.juejin.cn/?target=mailto:chao.qu521@gmail.com">chao.qu521@gmail.com</a>，点击 Go！之后，我们就可以登录我们的邮箱去确认授权即可。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/30c70a60ab3d41c79ce5885639ac10de~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>直接点击 <strong>Discover your build</strong> 即可。</p>
+<p>授权成功后，我们就可以看到 Build Scan 的诊断页面了。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/6a3173bc747a4868ae47e2ab2a40b921~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>可以看到，在界面的右边有一系列的功能 tab 可供我们选择查看，这里默认是 Summary 总览界面，我们的目的是要查看 应用的构建性能，所以点击右侧的 Performance tab 即可看到如下图所示的构建分析界面：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/874b6acb92da48b5a4609c98c4359424~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>从上图可以看到，<strong>Performance 界面中除了 Build、Configuration、Dependency resolution、Task execution 这四项外，还有 Daemon、Network activity、Settings and suggestions</strong>。</p>
+<p>在 Build 界面中，共有三个子项目，即 <strong>Total build time、Total garbage collection time、Peak heap memory usage</strong>，Total build time 里面的配置项前面我们已经分析过了，这里我们看看其余两项的含义，如下所示：</p>
+<ul>
+<li>Total garbage collection time：总的垃圾回收时间。</li>
+<li>Peak heap memory usage：最大堆内存使用。</li>
+</ul>
+<p>对于 Peak heap memory usage 这一项来说，还有三个子项，其含义如下：</p>
+<ul>
+<li>1）、PS Eden Space：Young Generation 的 Eden（伊甸园）物理内存区域。程序中生成的大部分新的对象都在 Eden 区中。</li>
+<li>2）、PS Survivor Space：Young Generation 的 Eden 的 两个Survivor（幸存者）物理内存区域。当 Eden 区满时，还存活的对象将被复制到其中一个 Survivor 区，当此 Survivor 区满时，此区存活的对象又被复制到另一个 Survivor 区，当这个 Survivor 区也满时，会将其中存活的对象复制到年老代。</li>
+<li>3）、PS Old Gen：Old Generation，一般情况下，年老代中的对象生命周期都比较长。</li>
+</ul>
+<p>由于我们的目的是关注项目的 build 时间，所以，我们直接关注到 Task execution 这一项。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/59d0bdd78ad24cb382c1097ace8c7e80~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>可以看到，Awesome-WanAndroid 项目中所有的 task 都是 Not cacheable 的。此时，我们往下滑动界面，可以看到所有 task 的构建时间。如下所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a7a946b452e747f8b616b008fe0ec11d~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>如果，我们想查看一个 tinyPicPluginSpeedRelease 这一个 task 的执行详细，可以点击 :app:tinyPicPluginSpeedRelease 这一项，然后，就会跳转到 Timeline 界面，显示出 tinyPicPluginSpeedRelease 相应的执行信息。如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/b6e3f9f091884174abccc5551ddeb69b~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>此外，这里我们点击弹出框右上方的第一个图标：Focus on task in timeline 即可看到该 task 在整个 Gradle build 时间线上的精确位置，如下图所示：</p>
+<p><img class="lazy" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAABGdBTUEAALGPC/xhBQAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAAaADAAQAAAABAAAAAQAAAADa6r/EAAAAC0lEQVQIHWNgAAIAAAUAAY27m/MAAAAASUVORK5CYII=" data-src="https://p3-juejin.byteimg.com/tos-cn-i-k3u1fbpfcp/a17bc09031964a1cb223afeb32a967f4~tplv-k3u1fbpfcp-watermark.awebp" alt="image"></p>
+<p>至此，我们可以看到 Build Scan 的功能要比 Profile report 强大不少，所以我强烈建议优先使用它进行 Gradle 构建时间的诊断与优化。</p>
+<h1 id="五、总结"><a href="#五、总结" class="headerlink" title="五、总结"></a>五、总结</h1><p>Gradle 每次构建的运行时间会随着项目编译次数越来少，因此为了准确评估 Gradle 构建提速的优化效果，我们可以在优化前后分别执行以下命令进行对比分析，如下所示：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">    gradlew --profile --recompile-scripts --offline --rerun-tasks assembleDebug</span><br><span class="line">复制代码</span><br></pre></td></tr></table></figure>
+
+<p>参数含义如下：</p>
+<ul>
+<li>profile：开启性能检测。</li>
+<li>recompile-scripts：不使用缓存，直接重新编译脚本。</li>
+<li>offline：启用离线编译模式。</li>
+<li>return-task：运行所有 gradle task 并忽略所有优化。</li>
+</ul>
+<p>此外，Facebook 的 Buck 以及 Google 的 Bazel 都是优秀的编译工具，那么他们为什么没有使用开源的构建工具呢，主要有如下 三点原因：</p>
+<ul>
+<li>1)、统一编译工具：内部的所有项目都使用同一套构建工具，包括 Android、Java、iOS、Go、C++ 等。编译工具的统一优化会使所有项目受益。</li>
+<li>2)、代码组织管理架构：Facebook 和 Google 的所有项目都放到同一个仓库里面，因此整个仓库非常庞大，并且，他们也不会使用 Git。目前 Google 使用的是<a href="https://link.juejin.cn/?target=http://www.ruanyifeng.com/blog/2016/07/google-monolithic-source-repository.html">Piper</a>，Facebook 是基于<a href="https://link.juejin.cn/?target=https://www.mercurial-scm.org/">HG</a>修改的，也是一种基于分布式的文件系统。</li>
+<li>3)、极致的性能追求：Buck 和 Bazel 的性能的确比 Gradle 更好，内部包含它们的各种编译优化。但是它们的定制型太强，而且对 Maven、JCenter 这样的外部依赖支持也不好。</li>
+</ul>
+
+
+<div class="article-footer reveal fs14"><section id="license"><div class="header"><span>许可协议</span></div><div class="body"><p>本文采用署名-非商业性使用-相同方式共享 4.0 国际许可协议，转载请注明出处。</p>
+</div></section></div>
+
+</article>
+
+<div class="related-wrap reveal" id="read-next"><section class="header cap theme"><span>接下来阅读</span></section><section class="body fs14"><div class="line"></div><a id="prev" href="/blog/2021-11-1-%E4%BB%A3%E7%A0%81%E6%B7%B7%E6%B7%86/">代码混淆<span class="note">较新</span></a><div class="line"></div><a id="more" href="/blog/archives">检索全部文章</a></section></div>
+
+
+
+
+
+
+  <div class='related-wrap md reveal' id="comments">
+    <div class='cmt-title cap theme'>
+      快来参与讨论吧
+    </div>
+    <div class='cmt-body beaudar'>
+      
+
+<svg class="loading" style="vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2709"><path d="M832 512c0-176-144-320-320-320V128c211.2 0 384 172.8 384 384h-64zM192 512c0 176 144 320 320 320v64C300.8 896 128 723.2 128 512h64z" p-id="2710"></path></svg>
+
+<div id="beaudar" repo="liwentuo/blog-comments" issue-term="pathname" theme="preferred-color-scheme" input-position="top" comment-order="desc" loading="false" branch="main"></div>
+
+    </div>
+  </div>
+
+
+
+      
+<footer class="page-footer reveal fs12"><hr><div class="sitemap"><div class="sitemap-group"><span class="fs14">博客</span><a href="/">近期发布</a><a href="/blog/categories/">分类</a><a href="/blog/tags/">标签</a><a href="/blog/archives/">归档</a></div><div class="sitemap-group"><span class="fs14">项目</span><a href="/wiki/tags/%E5%BC%80%E6%BA%90%E5%BA%93/">开源库</a><a href="/wiki/tags/%E5%AE%9E%E7%94%A8%E8%84%9A%E6%9C%AC/">实用脚本</a><a href="/wiki/tags/%E5%8D%9A%E5%AE%A2%E4%B8%BB%E9%A2%98/">博客主题</a><a href="/wiki/tags/%E5%BA%94%E7%94%A8%E7%A8%8B%E5%BA%8F/">应用程序</a></div><div class="sitemap-group"><span class="fs14">社交</span><a href="/friends/">友链</a><a href="/about/#comments">留言板</a></div><div class="sitemap-group"><span class="fs14">更多</span><a href="/about/">关于本站</a><a target="_blank" rel="noopener" href="https://github.com/liwentuo">GitHub</a></div></div><div class="text"><p>本博客所有文章除特别声明外，均采用 <a target="_blank" rel="noopener" href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> 许可协议，转载请注明出处。</p>
+<p>本站由 <a href="http://liwentuo.github.io/">@david</a> 创建，使用 <a target="_blank" rel="noopener" href="https://github.com/xaoxuu/hexo-theme-stellar/tree/1.5.1" title="v1.5.1">Stellar</a> 作为主题。</p>
+</div></footer>
+
+      <div class='float-panel mobile-only blur' style='display:none'>
+  <button type='button' class='sidebar-toggle mobile' onclick='sidebar.toggle()'>
+    <svg class="icon" style="width: 1em; height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="15301"><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 2.3 26.8 24.6 47.5 51.6 47.6h416.5v4z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15302"></path><path d="M566.407 808.3c26.9-0.1 49.3-20.8 51.6-47.6-1.9-27.7-23.9-49.7-51.6-51.6h-412.6c-28.2-1.4-52.6 19.5-55.5 47.6 1.9 27.7 23.9 49.7 51.6 51.6h416.5z m309.3-249.9c26.9-0.1 49.3-20.8 51.6-47.6-2.2-26.8-24.6-47.5-51.6-47.6h-721.9c-27.7-2.8-52.5 17.4-55.3 45.1-0.1 0.8-0.1 1.7-0.2 2.5 0.9 27.2 23.6 48.5 50.7 47.6H875.707z m-103.1-245.9c26.9-0.1 49.3-20.8 51.6-47.6-0.4-28.3-23.2-51.1-51.5-51.6h-618.9c-29.5-1.1-54.3 21.9-55.5 51.4v0.2c1.4 27.8 25.2 49.2 53 47.8 0.8 0 1.7-0.1 2.5-0.2h618.8z" p-id="15303"></path></svg>
+  </button>
+</div>
+
+    </div>
+  </div>
+  <div class='scripts'>
+    <script type="text/javascript">
+  stellar = {
+    // 懒加载 css https://github.com/filamentgroup/loadCSS
+    loadCSS: (href, before, media, attributes) => {
+      var doc = window.document;
+      var ss = doc.createElement("link");
+      var ref;
+      if (before) {
+        ref = before;
+      } else {
+        var refs = (doc.body || doc.getElementsByTagName("head")[0]).childNodes;
+        ref = refs[refs.length - 1];
+      }
+      var sheets = doc.styleSheets;
+      if (attributes) {
+        for (var attributeName in attributes) {
+          if (attributes.hasOwnProperty(attributeName)) {
+            ss.setAttribute(attributeName, attributes[attributeName]);
+          }
+        }
+      }
+      ss.rel = "stylesheet";
+      ss.href = href;
+      ss.media = "only x";
+      function ready(cb) {
+        if (doc.body) {
+          return cb();
+        }
+        setTimeout(function () {
+          ready(cb);
+        });
+      }
+      ready(function () {
+        ref.parentNode.insertBefore(ss, before ? ref : ref.nextSibling);
+      });
+      var onloadcssdefined = function (cb) {
+        var resolvedHref = ss.href;
+        var i = sheets.length;
+        while (i--) {
+          if (sheets[i].href === resolvedHref) {
+            return cb();
+          }
+        }
+        setTimeout(function () {
+          onloadcssdefined(cb);
+        });
+      };
+      function loadCB() {
+        if (ss.addEventListener) {
+          ss.removeEventListener("load", loadCB);
+        }
+        ss.media = media || "all";
+      }
+      if (ss.addEventListener) {
+        ss.addEventListener("load", loadCB);
+      }
+      ss.onloadcssdefined = onloadcssdefined;
+      onloadcssdefined(loadCB);
+      return ss;
+    },
+
+    // 从 butterfly 和 volantis 获得灵感
+    loadScript: (src, opt) => new Promise((resolve, reject) => {
+      var script = document.createElement('script');
+      script.src = src;
+      if (opt) {
+        for (let key of Object.keys(opt)) {
+          script[key] = opt[key]
+        }
+      } else {
+        // 默认异步，如果需要同步，第二个参数传入 {} 即可
+        script.async = true
+      }
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    }),
+
+    // https://github.com/jerryc127/hexo-theme-butterfly
+    jQuery: (fn) => {
+      if (typeof jQuery === 'undefined') {
+        stellar.loadScript(stellar.plugins.jQuery).then(fn)
+      } else {
+        fn()
+      }
+    }
+  };
+  stellar.github = 'https://github.com/xaoxuu/hexo-theme-stellar/tree/1.5.1';
+  stellar.config = {
+    date_suffix: {
+      just: '刚刚',
+      min: '分钟前',
+      hour: '小时前',
+      day: '天前',
+      month: '个月前',
+    },
+  };
+
+  // required plugins (only load if needs)
+  stellar.plugins = {
+    jQuery: 'https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js',
+    sitesjs: '/js/plugins/sites.js',
+    friendsjs: '/js/plugins/friends.js',
+  };
+
+  // optional plugins
+  if ('true' == 'true') {
+    stellar.plugins.lazyload = Object.assign({"enable":true,"js":"https://cdn.jsdelivr.net/npm/vanilla-lazyload@17.3.1/dist/lazyload.min.js","transition":"blur"});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.swiper = Object.assign({"enable":true,"css":"https://unpkg.com/swiper@6/swiper-bundle.min.css","js":"https://unpkg.com/swiper@6/swiper-bundle.min.js"});
+  }
+  if ('' == 'true') {
+    stellar.plugins.scrollreveal = Object.assign({"enable":null,"js":"https://cdn.jsdelivr.net/npm/scrollreveal@4.0.9/dist/scrollreveal.min.js","distance":"8px","duration":500,"interval":100,"scale":1});
+  }
+  if ('true' == 'true') {
+    stellar.plugins.preload = Object.assign({"enable":true,"service":"flying_pages","instant_page":"https://cdn.jsdelivr.net/gh/volantis-x/cdn-volantis@4.1.2/js/instant_page.js","flying_pages":"https://cdn.jsdelivr.net/gh/gijo-varghese/flying-pages@2.1.2/flying-pages.min.js"});
+  }
+</script>
+
+<!-- required -->
+
+  
+<script src="/js/main.js" async></script>
+
+
+
+<!-- optional -->
+
+  <script>
+  function loadBeaudar() {
+    const els = document.querySelectorAll("#comments #beaudar");
+    if (els.length === 0) return;
+    els.forEach((el, i) => {
+      try {
+        el.innerHTML = '';
+      } catch (error) {
+        console.log(error);
+      }
+      var script = document.createElement('script');
+      script.src = 'https://beaudar.lipk.org/client.js';
+      script.async = true;
+      for (let key of Object.keys(el.attributes)) {
+        let attr = el.attributes[key];
+        if (['class', 'id'].includes(attr.name) === false) {
+          script.setAttribute(attr.name, attr.value);
+        }
+      }
+      el.appendChild(script);
+    });
+  }
+  window.addEventListener('DOMContentLoaded', (event) => {
+      loadBeaudar();
+  });
+</script>
+
+
+
+
+<!-- inject -->
+
+
+  </div>
+</body>
+</html>
